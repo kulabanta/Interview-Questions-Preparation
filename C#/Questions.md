@@ -564,3 +564,218 @@ Console.WriteLine(obj.ReadonlyValue);            // Output: 500
 | **Implicitly static?**        | ✅ Yes           | ❌ No                     |
 | **Supports reference types?** | ❌ No            | ✅ Yes                    |
 | **Best For**                  | Fixed constants | Immutable runtime values |
+
+# 🔄 7. Difference Between `ref`, `out`, and `in` Parameters in C#
+
+In C#, **`ref`**, **`out`**, and **`in`** are **parameter modifiers** that allow you to **pass arguments by reference** instead of by value.  
+This means the called method can access and, in some cases, modify the original variable from the caller.
+
+---
+
+## 🧩 1. `ref` Keyword
+
+The **`ref`** keyword is used to **pass an argument by reference**, allowing both the **caller and the callee** to modify the value.
+
+### ✅ Example
+```csharp
+public void Increment(ref int number)
+{
+    number++;
+}
+
+int value = 5;
+Increment(ref value);
+Console.WriteLine(value); // Output: 6
+```
+## 💡 Key Points
+
+- The variable must be initialized before being passed.
+- Both input and output modifications are allowed.
+- Any change made inside the method affects the original variable.
+
+## 🧩 2. `out` Keyword
+
+The `out` keyword is used to return multiple values from a method.
+
+The called method must assign a value to an `out` parameter before returning.
+
+### ✅ Example
+```csharp
+public void GetValues(out int x, out int y)
+{
+    x = 10;
+    y = 20;
+}
+
+int a, b;
+GetValues(out a, out b);
+Console.WriteLine($"a = {a}, b = {b}"); // Output: a = 10, b = 20
+
+```
+## 💡 Key Points
+
+- The variable does not need to be initialized before being passed.
+
+- The method must assign a value before returning.
+
+- Commonly used when a method needs to return multiple values.
+
+## 🧩 3. `in` Keyword
+
+The `in` keyword (introduced in C# 7.2) is used to pass arguments by reference,
+but the method cannot modify the value — it’s `read-only`.
+
+### ✅ Example
+```csharp
+public void Display(in int number)
+{
+    Console.WriteLine($"Value: {number}");
+    // number++; ❌ Error: Cannot modify because it's passed as 'in'
+}
+
+int value = 50;
+Display(in value);
+
+```
+### 💡 Key Points
+
+- The variable must be initialized before being passed.
+
+- The parameter is read-only inside the method.
+
+- Helps avoid copying large structures while ensuring immutability.
+
+- Improves performance for large value types (like struct).
+
+## ⚖️ Comparison Table
+| Feature                        | `ref`                   | `out`                  | `in`                               |
+| ------------------------------ | ----------------------- | ---------------------- | ---------------------------------- |
+| **Initialization Before Call** | ✅ Required              | ❌ Not required         | ✅ Required                         |
+| **Must Assign in Method**      | ❌ No                    | ✅ Yes                  | ❌ No                               |
+| **Can Modify Inside Method**   | ✅ Yes                   | ✅ Yes                  | ❌ No                               |
+| **Pass by Reference**          | ✅ Yes                   | ✅ Yes                  | ✅ Yes                              |
+| **Primary Use**                | Modify and return value | Return multiple values | Read-only performance optimization |
+| **Introduced In**              | C# 1.0                  | C# 1.0                 | C# 7.2                             |
+
+# ⚙️ 8. var vs dynamic in C#
+
+## 🧩 Overview
+
+Both `var` and `dynamic` are used to declare variables without explicitly specifying their data types.
+However, they differ in how and when the type is determined.
+
+## 🧠 Key Difference
+| Feature                     | `var`                                                            | `dynamic`                                                                        |
+| --------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **Type Resolution**         | Compile-time (statically typed)                                  | Runtime (dynamically typed)                                                      |
+| **Requires Initialization** | ✅ Yes, must be initialized at declaration                        | ❌ No, can be declared without initialization                                     |
+| **Type Changes**            | ❌ Cannot change after initialization                             | ✅ Can change during runtime                                                      |
+| **Performance**             | Faster (type checked at compile time)                            | Slower (type resolved at runtime)                                                |
+| **IntelliSense Support**    | ✅ Full IntelliSense and compile-time checking                    | ⚠️ Limited IntelliSense, runtime errors possible                                 |
+| **Use Case**                | When the type is known at compile time but you want cleaner code | When working with dynamic or unknown types (e.g., reflection, COM objects, JSON) |
+
+## 🧾 Example
+```csharp
+// Using var - type known at compile time
+var number = 10;         // number is int
+number = "Hello";        // ❌ Compile-time error
+
+// Using dynamic - type resolved at runtime
+dynamic data = 10;       
+data = "Hello";          // ✅ Valid (runtime type changes)
+data = DateTime.Now;     // ✅ Also valid
+
+```
+## ⚠️ Important Notes
+
+- `var` cannot be used as a method parameter or return type.
+
+- `dynamic` can be used as a method parameter or return type.
+
+- Errors in `var` are caught at `compile time`, while in `dynamic`, they appear at `runtime`.
+
+# 🔧 9. Extension Methods in C#
+## 🧩 Overview
+
+`Extension methods` allow you to add new methods to existing types (classes, structs, or interfaces) without modifying their original source code or creating a new derived type.
+
+They are a `static` method of a `static` class, but they are called as if they were instance methods on the extended type.
+
+## 🧠 Key Points
+
+- Declared as a `static` method inside a `static` class.
+
+- The first parameter specifies which type the method extends and is prefixed with the `this` keyword.
+
+- They enable you to add utility methods to existing .NET types or your own classes non-invasively.
+
+## 🧾 Syntax
+```csharp
+public static class MyExtensions
+{
+    // Extension method for string type
+    public static bool IsCapitalized(this string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return false;
+
+        return char.IsUpper(input[0]);
+    }
+}
+class Program
+{
+    static void Main()
+    {
+        string word = "Hello";
+        bool result = word.IsCapitalized(); // Calling extension method like instance method
+        Console.WriteLine(result); // Output: True
+    }
+}
+
+```
+### 🧩 Behind the Scenes
+Even though you call it like an `instance` method, the compiler translates it into a `static` method call.
+
+```csharp
+bool result = MyExtensions.IsCapitalized(word);
+```
+### ⚠️ Rules & Considerations
+
+- The class containing extension methods must be `static`.
+
+- The method itself must be  `static`.
+
+- The first parameter defines which type is extended and must start with the keyword `this`.
+
+- You cannot override existing methods using extension methods.
+
+- **Namespace import (using)** is required to access extension methods defined elsewhere.
+
+### 💡 Advantages
+
+- Adds methods to existing types without inheritance or modifying source code.
+
+- Improves code readability and reusability.
+
+- Useful for **LINQ (Language Integrated Query)** , which heavily relies on extension methods.
+
+### 🧩 Real-World Example: LINQ
+
+LINQ methods like `Where()`, `Select()`, and `OrderBy()` are all extension methods on `IEnumerable<T>`.
+
+```csharp
+var numbers = new List<int> { 1, 2, 3, 4, 5 };
+var evenNumbers = numbers.Where(n => n % 2 == 0); // Where is an extension method
+
+```
+
+### 🧾 Summary Table
+
+| Feature             | Description                                              |
+| ------------------- | -------------------------------------------------------- |
+| **Definition**      | Adds new methods to existing types without altering them |
+| **Class Type**      | Must be static                                           |
+| **Method Type**     | Must be static                                           |
+| **First Parameter** | Uses `this` keyword to specify the type being extended   |
+| **Common Use**      | LINQ, utility/helper methods                             |
+| **Cannot Do**       | Override existing methods                                |
