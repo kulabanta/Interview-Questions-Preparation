@@ -779,3 +779,637 @@ var evenNumbers = numbers.Where(n => n % 2 == 0); // Where is an extension metho
 | **First Parameter** | Uses `this` keyword to specify the type being extended   |
 | **Common Use**      | LINQ, utility/helper methods                             |
 | **Cannot Do**       | Override existing methods                                |
+
+# 🔁 10. IEnumerable in C#
+
+## 🧩 Overview
+
+`IEnumerable` (and its generic version `IEnumerable<T>`) is an interface in C# that allows you to iterate over a collection of items one by one.
+It’s the foundation of all collection types in .NET — arrays, lists, and other collections implement it.
+
+## 🧠 Namespace & Definition
+
+``` csharp
+namespace System.Collections
+{
+    public interface IEnumerable
+    {
+        IEnumerator GetEnumerator();
+    }
+}
+
+namespace System.Collections.Generic
+{
+    public interface IEnumerable<out T> : IEnumerable
+    {
+        IEnumerator<T> GetEnumerator();
+    }
+}
+```
+## ✅ Key Point:
+
+- `IEnumerable<T>` returns an enumerator (`IEnumerator<T>`) that provides a way to iterate through the collection.
+
+## ⚙️ Characteristics of IEnumerable
+| Feature                | Description                                                    |
+| ---------------------- | -------------------------------------------------------------- |
+| **Namespace**          | `System.Collections` / `System.Collections.Generic`            |
+| **Type of Execution**  | In-memory (client-side)                                        |
+| **Execution Mode**     | Synchronous                                                    |
+| **Supports LINQ?**     | ✅ Yes (LINQ to Objects)                                        |
+| **Deferred Execution** | ✅ Yes (via LINQ methods)                                       |
+| **Use Case**           | When working with in-memory collections like List, Array, etc. |
+
+## 🧾 Basic Example
+``` csharp
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+        IEnumerable<int> numbers = new List<int> { 1, 2, 3, 4, 5 };
+
+        foreach (var num in numbers)
+        {
+            Console.WriteLine(num);
+        }
+    }
+}
+
+/**
+    output
+    1
+    2
+    3
+    4
+    5
+**/
+```
+Here, `IEnumerable<int>` allows you to iterate over the collection of integers.
+
+## 🧠 Custom IEnumerable Example
+ You can also create your own class that implements `IEnumerable<T>`.
+
+ ```csharp
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+public class FibonacciSequence : IEnumerable<int>
+{
+    private int _count;
+
+    public FibonacciSequence(int count)
+    {
+        _count = count;
+    }
+
+    public IEnumerator<int> GetEnumerator()
+    {
+        int prev = 0, current = 1;
+        for (int i = 0; i < _count; i++)
+        {
+            yield return prev;
+            int temp = prev;
+            prev = current;
+            current = temp + current;
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+class Program
+{
+    static void Main()
+    {
+        var fibonacci = new FibonacciSequence(5);
+
+        foreach (var number in fibonacci)
+        {
+            Console.WriteLine(number);
+        }
+    }
+}
+/**
+output
+0
+1
+1
+2
+3
+**/
+ ```
+ This demonstrates how you can implement custom iteration logic using `yield return`.
+
+ ## 💡 Deferred Execution Example
+ ```csharp
+ IEnumerable<int> data = GetNumbers();
+
+foreach (var num in data)
+{
+    Console.WriteLine(num);
+}
+
+IEnumerable<int> GetNumbers()
+{
+    Console.WriteLine("Start fetching numbers...");
+    yield return 1;
+    yield return 2;
+    yield return 3;
+    Console.WriteLine("Done fetching numbers!");
+}
+
+/**
+Start fetching numbers...
+1
+2
+3
+Done fetching numbers!
+**/
+ ```
+
+## ⚖️ Advantages
+✅ Simple way to iterate over collections<br>
+✅ Supports LINQ and deferred execution <br>
+✅ Reduces memory usage (fetches data lazily)<br>
+✅ Enables custom iteration logic using `yield`
+
+## ⚠️ Limitations
+
+❌ Read-only access (cannot modify elements)<br>
+❌ No indexing (unlike IList)<br>
+❌ Single-pass enumeration (must re-enumerate to access again)<br>
+❌ Works in-memory only (unlike `IQueryable`)<br>
+
+## 🧩 Interview Tip
+```
+Q: What is the difference between IEnumerable and IEnumerator?
+A:
+- IEnumerable provides an enumerator using GetEnumerator()
+- IEnumerator actually performs the iteration using MoveNext() and Current.
+```
+
+# 🔁 11. yield Keyword in C#
+
+## 🧩 Overview
+
+- The `yield` keyword in C# is used to simplify the creation of iterators (methods that return elements one at a time).<br>
+- It allows you to return items lazily, one by one, without creating an intermediate collection or managing the iteration state manually.
+- When a method uses `yield` return, the compiler automatically generates the logic for `IEnumerable` or `IEnumerator`.
+
+## ⚙️ Syntax
+```csharp
+yield return <expression>;
+yield break;
+```
+
+- yield return — returns the next element in the sequence.
+
+- yield break — stops the iteration early.
+
+## 🧠 Key Points
+| Feature          | Description                                                                     |
+| ---------------- | ------------------------------------------------------------------------------- |
+| **Purpose**      | Used to create iterator methods easily                                          |
+| **Return Type**  | Must return `IEnumerable`, `IEnumerable<T>`, `IEnumerator`, or `IEnumerator<T>` |
+| **Execution**    | Deferred (lazy evaluation)                                                      |
+| **Keyword Type** | Contextual keyword                                                              |
+| **Control Flow** | Saves the current state of iteration between calls                              |
+
+## 🧾 Example 1: Basic Use of yield return
+```csharp
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+        foreach (int num in GetNumbers())
+        {
+            Console.WriteLine(num);
+        }
+    }
+
+    static IEnumerable<int> GetNumbers()
+    {
+        yield return 1;
+        yield return 2;
+        yield return 3;
+    }
+}
+/**
+1
+2
+3
+**/
+```
+- 💡 The compiler automatically creates an iterator object that remembers where it left off after each `yield` return.
+
+## 🧩 Example 2: Using yield break
+```csharp
+static IEnumerable<int> GetNumbers()
+{
+    for (int i = 1; i <= 5; i++)
+    {
+        if (i == 4)
+            yield break; // stop iteration
+
+        yield return i;
+    }
+}
+/**
+1
+2
+3
+**/
+```
+- Here, iteration stops when `i == 4` due to `yield break`.
+
+## ⚡ Example 3: Deferred Execution
+`yield` supports deferred execution — elements are generated only when iterated.
+```csharp
+static IEnumerable<int> GetNumbers()
+{
+    Console.WriteLine("Start");
+    yield return 1;
+    yield return 2;
+    Console.WriteLine("End");
+}
+
+static void Main()
+{
+    var numbers = GetNumbers();
+    Console.WriteLine("Before iteration");
+
+    foreach (var n in numbers)
+        Console.WriteLine(n);
+}
+/**
+Before iteration
+Start
+1
+2
+End
+**/
+```
+💡 The method executes only during iteration, not when `GetNumbers()` is called — demonstrating lazy evaluation.
+
+## 🧾 When to Use yield
+
+✅ Use yield when:
+
+1. You want to stream data one item at a time.
+
+2. You need deferred execution.
+
+3. You want to simplify iterators without creating temporary collections.
+
+4. You are implementing custom `IEnumerable` logic.
+
+## ⚠️ Limitations of yield
+
+❌ Cannot use inside:
+
+1. async methods (use `IAsyncEnumerable` instead).
+
+2. Anonymous methods or lambda expressions (directly).
+
+3. Methods that return anything other than IEnumerable/IEnumerator.
+
+## 💡 Interview Tip
+```
+Q: What is the advantage of using yield in C#?
+A: It simplifies iterator creation, enables deferred execution, and reduces memory usage by returning data lazily instead of building large collections in memory.
+```
+
+# 🔄 12. IEnumerator in C#
+
+## 🧩 Overview
+
+`IEnumerator` in C# is an interface that allows sequential iteration over a collection (like arrays, lists, etc.).<br>
+It provides the mechanism to traverse items one at a time without exposing the underlying collection structure.
+
+## 🧠 Namespace & Definition
+```csharp
+namespace System.Collections
+{
+    public interface IEnumerator
+    {
+        bool MoveNext();     // Moves to the next element
+        object Current { get; }  // Gets the current element
+        void Reset();        // Resets the enumerator to its initial position
+    }
+}
+
+namespace System.Collections.Generic
+{
+    public interface IEnumerator<out T> : IDisposable, IEnumerator
+    {
+        new T Current { get; } // Type-safe version of Current
+    }
+}
+
+```
+## ⚙️ Key Members
+| Member           | Description                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------ |
+| **`Current`**    | Returns the current element in the collection.                                       |
+| **`MoveNext()`** | Moves the cursor to the next element; returns `false` if there are no more elements. |
+| **`Reset()`**    | Resets the enumerator to its initial position (before the first element).            |
+| **`Dispose()`**  | Releases unmanaged resources (in the generic version).                               |
+
+## 🧾 Example: Using IEnumerator Manually
+```csharp
+using System;
+using System.Collections;
+
+class Program
+{
+    static void Main()
+    {
+        ArrayList numbers = new ArrayList { 1, 2, 3 };
+
+        IEnumerator enumerator = numbers.GetEnumerator();
+
+        while (enumerator.MoveNext())
+        {
+            Console.WriteLine(enumerator.Current);
+        }
+    }
+}
+/**
+1
+2
+3
+**/
+
+```
+💡 The foreach loop in C# internally uses IEnumerator to iterate over a collection.
+
+## 🧠 How foreach Uses IEnumerator
+```csharp
+foreach (var item in collection)
+{
+    // Behind the scenes:
+    // 1. Calls GetEnumerator()
+    // 2. Calls MoveNext()
+    // 3. Accesses Current
+}
+
+```
+Equivalent to:
+```cshap
+var enumerator = collection.GetEnumerator();
+try
+{
+    while (enumerator.MoveNext())
+    {
+        var item = enumerator.Current;
+        Console.WriteLine(item);
+    }
+}
+finally
+{
+    (enumerator as IDisposable)?.Dispose();
+}
+
+```
+
+## 🔁 Relationship Between IEnumerable and IEnumerator
+| Concept         | Description                                                         |
+| --------------- | ------------------------------------------------------------------- |
+| **IEnumerable** | Provides an enumerator using `GetEnumerator()`                      |
+| **IEnumerator** | Provides the actual mechanism to iterate (MoveNext, Current, Reset) |
+| **Link**        | `IEnumerable.GetEnumerator()` returns an `IEnumerator`              |
+
+## Visual Flow
+```csharp
+foreach → calls GetEnumerator() → returns IEnumerator
+→ MoveNext() → Current → repeat until MoveNext() = false
+
+```
+## ⚖️ Advantages
+
+✅ Enables custom iteration logic<br>
+✅ Separates collection logic from traversal logic<br>
+✅ Works with foreach loop<br>
+✅ Reduces memory overhead (no copying of collection)<br>
+
+## ⚠️ Limitations
+
+❌ One-way traversal (no backward iteration)<br>
+❌ State is lost after iteration<br>
+❌ Not thread-safe<br>
+❌ Must call `Reset()` to start over (usually avoided)<br>
+
+## 🧾 Summary Table
+| Feature            | Description                                         |
+| ------------------ | --------------------------------------------------- |
+| **Interface Name** | `IEnumerator` / `IEnumerator<T>`                    |
+| **Namespace**      | `System.Collections` / `System.Collections.Generic` |
+| **Key Methods**    | `MoveNext()`, `Current`, `Reset()`                  |
+| **Purpose**        | Iterates sequentially through a collection          |
+| **Common Usage**   | Used internally by `foreach`                        |
+| **Simplified By**  | `yield` keyword                                     |
+
+# ⚙️ 13. IQueryable in C#
+
+## 🧩 Overview
+
+`IQueryable` is an interface in C# that allows querying data from a data source (like a database) in a deferred and composable way.<br>
+It is part of the `System.Linq` namespace and is commonly used in Entity Framework and LINQ to SQL for querying data sources that support query translation.
+
+## 🧠 Definition
+```csharp
+public interface IQueryable : IEnumerable
+{
+    Type ElementType { get; }
+    Expression Expression { get; }
+    IQueryProvider Provider { get; }
+}
+
+```
+`IQueryable<T>` inherits from `IEnumerable<T>` and adds the ability to build expression trees that represent queries, which are later executed by a query provider (e.g., EF Core).
+
+## 🔍 Key Characteristics
+| Feature            | Description                                                                  |
+| ------------------ | ---------------------------------------------------------------------------- |
+| **Namespace**      | `System.Linq`                                                                |
+| **Inherits From**  | `IEnumerable<T>`                                                             |
+| **Execution Type** | Deferred (query executed when enumerated)                                    |
+| **Query Provider** | Uses `IQueryProvider` to translate queries into SQL or other query languages |
+| **Use Case**       | When querying remote data sources (like databases, APIs)                     |
+
+## 💡 Example — Basic Usage
+```csharp
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Program
+{
+    public static void Main()
+    {
+        List<int> numbers = new List<int> { 1, 2, 3, 4, 5 };
+        
+        // IQueryable example (simulating LINQ to SQL or EF)
+        IQueryable<int> queryableNumbers = numbers.AsQueryable();
+
+        var result = queryableNumbers
+                        .Where(n => n > 2)
+                        .Select(n => n * n);
+
+        foreach (var num in result)
+        {
+            Console.WriteLine(num);
+        }
+    }
+}
+/**
+9
+16
+25
+**/
+```
+## ⚙️ How It Works
+
+1. **Expression Tree Creation:**<br>
+i. When you write a query like .Where(n => n > 2), it is not executed immediately.<br>
+ii. Instead, an expression tree is built, representing the query.
+
+2. **Deferred Execution:**<br>
+The query executes only when enumerated (e.g., in a `foreach` loop or .`ToList()` call).
+
+3. **Query Translation:**<br>
+In ORMs like Entity Framework, the expression tree is translated to SQL and executed in the database.
+
+## 🧾 Example — Entity Framework Usage
+```csharp
+using (var context = new AppDbContext())
+{
+    IQueryable<User> usersQuery = context.Users
+                                         .Where(u => u.Age > 25);
+
+    // Query not executed yet
+    var userList = usersQuery.ToList(); // Query executed here
+}
+
+```
+## ✅ Explanation:
+
+- The `Where()` builds a query expression.
+- The actual SQL query is executed only when `.ToList()` is called.
+
+## ⚖️ Difference Between IEnumerable and IQueryable
+| Feature                | `IEnumerable`                          | `IQueryable`                |
+| ---------------------- | -------------------------------------- | --------------------------- |
+| **Execution**          | In-memory                              | Database/server-side        |
+| **Query Translation**  | LINQ to Objects                        | LINQ to SQL / EF            |
+| **Performance**        | Fetches all data and filters in memory | Fetches only filtered data  |
+| **Deferred Execution** | Yes                                    | Yes                         |
+| **Best For**           | Small in-memory collections            | Large external data sources |
+
+# ⚙️ 14. IAsyncEnumerable<T> in C#
+## 🧩 Overview
+
+`IAsyncEnumerable<T>` is an interface introduced in C# 8.0 that allows you to iterate over a sequence of data asynchronously using the await foreach loop. <br>
+
+It’s useful when working with data streams or asynchronous operations — especially when retrieving large datasets, reading files, or making database/network calls where waiting synchronously would block the thread.
+
+## 🧠 Definition
+```csharp
+public interface IAsyncEnumerable<out T>
+{
+    IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default);
+}
+
+```
+## 🔍 Key Characteristics
+| Feature             | Description                                       |
+| ------------------- | ------------------------------------------------- |
+| **Namespace**       | `System.Collections.Generic`                      |
+| **Introduced In**   | C# 8.0 / .NET Core 3.0+                           |
+| **Purpose**         | To enable asynchronous iteration over collections |
+| **Execution**       | Asynchronous (non-blocking)                       |
+| **Enumerator Type** | `IAsyncEnumerator<T>`                             |
+| **Loop Type**       | `await foreach`                                   |
+
+## 💡 Example — Basic Usage
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+public class Program
+{
+    public static async IAsyncEnumerable<int> GenerateNumbersAsync()
+    {
+        for (int i = 1; i <= 5; i++)
+        {
+            await Task.Delay(500); // Simulate async operation
+            yield return i;
+        }
+    }
+
+    public static async Task Main()
+    {
+        await foreach (var number in GenerateNumbersAsync())
+        {
+            Console.WriteLine(number);
+        }
+    }
+}
+
+/**
+1
+2
+3
+4
+5
+**/
+```
+## ✅ Explanation:
+
+1. The method `GenerateNumbersAsync()` returns `IAsyncEnumerable<int>`.
+
+2. Each iteration awaits the completion of `Task.Delay(500)`.
+
+3. `await foreach` consumes the asynchronous sequence.
+
+## 🧩 Example — Database Scenario (EF Core)
+```csharp
+using var context = new AppDbContext();
+
+await foreach (var user in context.Users.AsAsyncEnumerable())
+{
+    Console.WriteLine(user.Name);
+}
+
+```
+## ✅ Explanation:
+
+1. `AsAsyncEnumerable()` converts a database query to an asynchronous stream.
+
+2. The `await foreach` loop asynchronously reads rows as they’re available, improving scalability for large result sets.
+
+## ⚖️ Difference Between `IEnumerable<T>` and `IAsyncEnumerable<T>`
+| Feature             | `IEnumerable<T>`            | `IAsyncEnumerable<T>`           |
+| ------------------- | --------------------------- | ------------------------------- |
+| **Iteration Type**  | Synchronous                 | Asynchronous                    |
+| **Introduced In**   | C# 1.0                      | C# 8.0                          |
+| **Enumerator**      | `IEnumerator<T>`            | `IAsyncEnumerator<T>`           |
+| **Loop**            | `foreach`                   | `await foreach`                 |
+| **Use Case**        | In-memory, fast collections | I/O-bound or network operations |
+| **Thread Blocking** | Blocks thread               | Non-blocking, async             |
+
+
+## ⚠️ Important Notes
+1. You must mark the consuming method as `async` when using `await foreach`.
+
+2. The source method returning `IAsyncEnumerable<T>` can use `yield return` with `await` for asynchronous data generation.
+
+3. Works best with I/O-bound operations (database, APIs, streams, etc.).
