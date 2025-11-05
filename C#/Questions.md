@@ -1413,3 +1413,445 @@ await foreach (var user in context.Users.AsAsyncEnumerable())
 2. The source method returning `IAsyncEnumerable<T>` can use `yield return` with `await` for asynchronous data generation.
 
 3. Works best with I/O-bound operations (database, APIs, streams, etc.).
+
+
+# ⚙️ 15. Generics in C#
+
+## 🧩 Overview
+
+**Generics** in C# allow you to define **type-safe** data structures and methods without committing to a specific data type until the class, method, or interface is instantiated or called.
+
+They help in code reusability, type safety, and performance improvement by avoiding boxing/unboxing and runtime type casting.
+
+## 🧠 Definition
+```csharp
+// Generic class
+public class GenericClass<T>
+{
+    public T Data { get; set; }
+
+    public void Display(T value)
+    {
+        Console.WriteLine($"Value: {value}");
+    }
+}
+public class Program
+{
+    public static void Main()
+    {
+        // Integer type
+        GenericClass<int> intObj = new GenericClass<int>();
+        intObj.Display(100);
+
+        // String type
+        GenericClass<string> strObj = new GenericClass<string>();
+        strObj.Display("Hello Generics");
+    }
+}
+/**
+Value: 100
+Value: Hello Generics
+
+**/
+```
+
+## 🔍 Why Use Generics?
+| Feature              | Description                                 |
+| -------------------- | ------------------------------------------- |
+| **Type Safety**      | Ensures compile-time checking of types      |
+| **Code Reusability** | Write once, use for any type                |
+| **Performance**      | Avoids boxing/unboxing and casting overhead |
+| **Maintainability**  | Reduces code duplication and runtime errors |
+
+## 🧩 Generic Methods
+You can also create **generic methods** inside **normal or generic classes**.
+```csharp
+public class Program
+{
+    public static void Main()
+    {
+        // Integer type
+        GenericClass<int> intObj = new GenericClass<int>();
+        intObj.Display(100);
+
+        // String type
+        GenericClass<string> strObj = new GenericClass<string>();
+        strObj.Display("Hello Generics");
+    }
+}
+
+```
+## 🧰 Generic Constraints
+You can **restrict the type parameters** using constraints for more control.
+
+| Constraint                | Description                                  |
+| ------------------------- | -------------------------------------------- |
+| `where T : struct`        | Only value types                             |
+| `where T : class`         | Only reference types                         |
+| `where T : new()`         | Must have a public parameterless constructor |
+| `where T : BaseClass`     | Must inherit from a specific base class      |
+| `where T : InterfaceName` | Must implement a specific interface          |
+
+```csharp
+public class Repository<T> where T : class, new()
+{
+    public T CreateInstance()
+    {
+        return new T(); // Works because of new() constraint
+    }
+}
+
+```
+
+## 🧾 Example — Generic Interface
+```csharp
+public interface IRepository<T>
+{
+    void Add(T item);
+    IEnumerable<T> GetAll();
+}
+
+public class Repository<T> : IRepository<T>
+{
+    private List<T> _items = new List<T>();
+
+    public void Add(T item) => _items.Add(item);
+    public IEnumerable<T> GetAll() => _items;
+}
+
+```
+## 🧠 Advanced Concept — Generic Delegates
+C# also supports **generic delegates**:
+```csharp
+Func<int, string> convert = num => $"Number: {num}";
+Action<string> print = msg => Console.WriteLine(msg);
+Predicate<int> isEven = num => num % 2 == 0;
+```
+
+## ✅ Interview Tip
+**Q**. Why are generics better than using object type parameters?<br>
+**Answer:**<br>
+Because generics ensure compile-time type safety, avoid runtime casting, and improve performance by preventing boxing/unboxing.
+
+# ⚙️ 16. Delegates in C#
+## 🧩 Overview
+
+A **delegate** in C# is a type-safe function pointer — it holds a reference to a method and allows methods to be passed as parameters, invoked dynamically, or used as callbacks.
+
+Delegates enable decoupling between the caller and the method being called, supporting event-driven and functional programming in C#.
+
+## 🧠 Definition
+```csharp
+// Delegate Declaration
+public delegate void MyDelegate(string message);
+```
+
+## ✅ Explanation:
+
+- delegate keyword defines a delegate type.
+
+- The delegate can hold a reference to any method with a matching signature and return type.
+
+## 💡 Example — Basic Delegate Usage
+```csharp
+using System;
+
+public class Program
+{
+    // Step 1: Declare a delegate
+    public delegate void GreetDelegate(string name);
+
+    // Step 2: Create methods that match the delegate signature
+    public static void GreetMorning(string name) => Console.WriteLine($"Good morning, {name}!");
+    public static void GreetEvening(string name) => Console.WriteLine($"Good evening, {name}!");
+
+    public static void Main()
+    {
+        // Step 3: Instantiate delegate
+        GreetDelegate greet = GreetMorning;
+
+        // Step 4: Invoke delegate
+        greet("Alice");
+
+        // Step 5: Reassign or combine methods
+        greet += GreetEvening;
+        greet("Bob");
+    }
+}
+/**
+Good morning, Alice!
+Good morning, Bob!
+Good evening, Bob!
+**/
+```
+
+## ✅ Explanation:
+
+- The delegate points to a method and can invoke it.
+- You can combine multiple methods using += (multicast delegate).
+
+## 🧰 Why Use Delegates?
+| Benefit                    | Description                                           |
+| -------------------------- | ----------------------------------------------------- |
+| **Decoupling**             | Caller doesn’t need to know which method will execute |
+| **Callback Methods**       | Enables passing methods as parameters                 |
+| **Multicasting**           | Can invoke multiple methods at once                   |
+| **Event Handling**         | Core mechanism for events in C#                       |
+| **Functional Programming** | Supports lambdas and anonymous functions              |
+
+## 🧩 Types of Delegates
+1. **Single-cast Delegate**
+
+- Holds a reference to one method.
+
+```csharp
+Action<string> greet = name => Console.WriteLine($"Hello, {name}");
+greet("Alice");
+```
+
+2. **Multicast Delegate**
+- Can hold multiple methods and invoke them in sequence.
+```csharp
+MyDelegate greetAll = GreetMorning;
+greetAll += GreetEvening;
+greetAll("John");
+```
+3. **Generic Delegates**
+- C# provides built-in generic delegate types:
+
+| Delegate Type      | Description                                    | Example                                          |
+| ------------------ | ---------------------------------------------- | ------------------------------------------------ |
+| `Action<T>`        | Represents a method with **no return value**   | `Action<int> print = x => Console.WriteLine(x);` |
+| `Func<T, TResult>` | Represents a method **that returns a value**   | `Func<int, int> square = x => x * x;`            |
+| `Predicate<T>`     | Represents a method that **returns a boolean** | `Predicate<int> isEven = x => x % 2 == 0;`       |
+
+## ⚙️ Delegate with Anonymous Method
+```csharp
+MyDelegate showMessage = delegate(string msg)
+{
+    Console.WriteLine($"Message: {msg}");
+};
+
+showMessage("Hello from anonymous method!");
+```
+
+## 🧠 Delegate with Lambda Expression
+```csharp
+MyDelegate display = (msg) => Console.WriteLine($"Lambda says: {msg}");
+display("Hello from Lambda!");
+```
+
+## 🧾 Example — Delegate as a Callback
+```csharp
+public class MathOperations
+{
+    public delegate void ResultDelegate(int result);
+
+    public void Add(int a, int b, ResultDelegate callback)
+    {
+        int sum = a + b;
+        callback(sum); // Delegate callback
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        MathOperations math = new MathOperations();
+        math.Add(5, 10, result => Console.WriteLine($"Sum: {result}"));
+    }
+}
+```
+## ⚖️ Difference Between Delegate, Func, Action, and Predicate
+| Type               | Return Type    | Parameters     | Description                            |
+| ------------------ | -------------- | -------------- | -------------------------------------- |
+| `Delegate`         | Custom defined | Custom defined | Base concept                           |
+| `Action<T>`        | `void`         | 0–16           | Built-in delegate with no return value |
+| `Func<T, TResult>` | Any            | 0–16           | Built-in delegate that returns a value |
+| `Predicate<T>`     | `bool`         | 1              | Used for conditions and filtering      |
+
+## 🧠 Interview Tip
+**Q.** What’s the difference between Delegates and Events?<br>
+**Answer:** <br>
+- A delegate is a reference to a method.
+- An event is a wrapper around a delegate that restricts access — only the declaring class can invoke it, while others can subscribe/unsubscribe.
+
+# ⚙️17. Events in C#
+
+## 🧩 Overview
+
+An event in C# is a mechanism for communication between objects.
+It allows a class (publisher) to notify other classes (subscribers) when something happens.
+
+Events are built on top of delegates — they provide a safe and structured way to expose delegate functionality, where:
+
+- Only the publisher can raise (trigger) the event.
+
+- Other classes can **subscribe (+=)** or **unsubscribe (-=)** to be notified.
+
+## 💡 Example — Basic Event Usage
+```csharp
+using System;
+
+public class Process
+{
+    // Step 1: Declare delegate
+    public delegate void Notify();
+
+    // Step 2: Declare event
+    public event Notify ProcessCompleted;
+
+    public void StartProcess()
+    {
+        Console.WriteLine("Process started...");
+        System.Threading.Thread.Sleep(1000); // Simulate work
+        Console.WriteLine("Process finished!");
+
+        // Step 3: Raise event
+        ProcessCompleted?.Invoke();
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        Process process = new Process();
+
+        // Step 4: Subscribe to event
+        process.ProcessCompleted += OnProcessCompleted;
+
+        process.StartProcess();
+    }
+
+    // Step 5: Event handler
+    static void OnProcessCompleted()
+    {
+        Console.WriteLine("Notification: Process Completed Successfully!");
+    }
+}
+/**
+output 
+Process started...
+Process finished!
+Notification: Process Completed Successfully!
+**/
+```
+### ✅ Explanation:
+
+1. `event` keyword declares an event based on a delegate type.
+
+2. `?.Invoke()` ensures the event is raised only if there are subscribers.
+
+## 🧰 Why Use Events?
+| Benefit             | Description                                                            |
+| ------------------- | ---------------------------------------------------------------------- |
+| **Loose Coupling**  | Subscribers don’t need to know the internal logic of the publisher     |
+| **Reusability**     | Multiple subscribers can listen to one event                           |
+| **Encapsulation**   | Only the declaring class can raise the event                           |
+| **Maintainability** | Clear separation between trigger (publisher) and response (subscriber) |
+
+## 🧩 Event with EventHandler
+C# provides the `EventHandler` delegate as a built-in standard for defining events.
+```csharp
+public class Process
+{
+    // Standard event pattern using EventHandler
+    public event EventHandler ProcessCompleted;
+
+    public void StartProcess()
+    {
+        Console.WriteLine("Process running...");
+        OnProcessCompleted();
+    }
+
+    protected virtual void OnProcessCompleted()
+    {
+        ProcessCompleted?.Invoke(this, EventArgs.Empty);
+    }
+}
+
+public class Program
+{
+    static void Main()
+    {
+        Process process = new Process();
+        process.ProcessCompleted += ProcessCompletedHandler;
+        process.StartProcess();
+    }
+
+    static void ProcessCompletedHandler(object sender, EventArgs e)
+    {
+        Console.WriteLine("Process completed event received!");
+    }
+}
+```
+### ✅ Explanation:
+- Uses the standard EventHandler delegate:
+
+```csharp
+public delegate void EventHandler(object sender, EventArgs e);
+```
+
+- sender → the object that raised the event.
+
+- EventArgs → carries additional event data (empty here).
+
+## ⚙️ Event with Custom EventArgs
+- You can send custom data through events using a class derived from `EventArgs`.
+```csharp
+public class ProcessEventArgs : EventArgs
+{
+    public string Message { get; set; }
+}
+
+public class Process
+{
+    public event EventHandler<ProcessEventArgs> ProcessCompleted;
+
+    public void StartProcess()
+    {
+        Console.WriteLine("Processing...");
+        OnProcessCompleted(new ProcessEventArgs { Message = "Task done successfully!" });
+    }
+
+    protected virtual void OnProcessCompleted(ProcessEventArgs e)
+    {
+        ProcessCompleted?.Invoke(this, e);
+    }
+}
+
+public class Program
+{
+    static void Main()
+    {
+        Process process = new Process();
+        process.ProcessCompleted += (sender, e) =>
+        {
+            Console.WriteLine($"Event received: {e.Message}");
+        };
+
+        process.StartProcess();
+    }
+}
+```
+### ✅ Explanation:
+
+1. `ProcessEventArgs` holds custom event data.
+
+2. `EventHandler<TEventArgs>` is a generic delegate that passes additional info.
+
+## ⚖️ Difference Between Delegate and Event
+
+| Feature            | Delegate                            | Event                                             |
+| ------------------ | ----------------------------------- | ------------------------------------------------- |
+| **Definition**     | Type-safe function pointer          | Wrapper around a delegate                         |
+| **Invocation**     | Can be called directly by any class | Can only be invoked by the class that declared it |
+| **Access Control** | Publicly accessible                 | Restricted to publisher                           |
+| **Use Case**       | Callbacks, anonymous methods        | Notifications, message broadcasting               |
+
+
+### 🧠 Interview Tip
+**Q.** What’s the difference between an Event and a Delegate?<br>
+**Answer**: A delegate is a method reference type, while an event is a language feature that restricts access to delegates so that only the declaring class can invoke them. Events are the publish-subscribe layer built on top of delegates.
