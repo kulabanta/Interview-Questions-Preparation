@@ -2559,3 +2559,422 @@ Console.WriteLine(GetCategory(25)); // Output: Adult
 | **Property Pattern**   | Matches property values        | `if (person is { Age: > 18 })`      |
 | **Positional Pattern** | Matches tuple/record positions | `if (point is (10, 20))`            |
 | **Switch Pattern**     | Pattern-based branching        | `x switch { ... }`                  |
+
+# ⚡23. Asynchronous Programming in C#
+## What is Asynchronous Programming?
+`Asynchronous programming` in C# allows your program to perform `non-blocking operations` — meaning it can continue executing other tasks while waiting for long-running operations (like file I/O, network calls, or database queries) to complete.
+
+✅ In short:<br>
+It helps your application stay responsive and efficient, especially in UI apps and web servers.
+
+## Synchronous vs Asynchronous
+| Type             | Description                                                                          | Example                                           |
+| ---------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| **Synchronous**  | Tasks run **one after another**. The next task waits for the previous one to finish. | Reading a file blocks until it’s completely read. |
+| **Asynchronous** | Tasks run **independently**, allowing other work to continue while waiting.          | Reading a file while UI stays responsive.         |
+
+## 🧩 Example:
+### Synchronous Code:
+```csharp
+public void DownloadFile()
+{
+    var content = File.ReadAllText("data.txt"); // Blocks here
+    Console.WriteLine("File downloaded!");
+}
+```
+### Asynchronous Code:
+```csharp
+public async Task DownloadFileAsync()
+{
+    var content = await File.ReadAllTextAsync("data.txt"); // Non-blocking
+    Console.WriteLine("File downloaded!");
+}
+```
+✅ Result:<br>
+The `await` keyword frees the thread while waiting — allowing other operations to run.
+
+## Core Concepts
+1️⃣ async Keyword
+
+Marks a method as `asynchronous` and allows use of the `await` keyword inside it.
+
+2️⃣ await Keyword
+
+Pauses execution of the `async` method until the awaited task completes — without blocking the thread.
+
+3️⃣ Task and Task<TResult>
+
+- Represents an `asynchronous operation`.<br>
+- `Task` is used for void-returning async methods;<br>
+- `Task<TResult>` returns a result asynchronously.
+
+## Example — Async Method Returning Data
+```csharp
+public async Task<string> GetDataAsync()
+{
+    await Task.Delay(2000); // Simulate delay
+    return "Data received!";
+}
+
+public async Task ExecuteAsync()
+{
+    string result = await GetDataAsync();
+    Console.WriteLine(result);
+}
+```
+### 🧠 Explanation:
+
+- `await Task.Delay(2000)` pauses for 2 seconds without blocking.
+
+- The control returns to the caller, and execution resumes once the task completes.
+
+## Async in UI Applications
+In `WPF / WinForms`, async keeps the `UI responsive`:
+```csharp
+private async void Button_Click(object sender, EventArgs e)
+{
+    StatusLabel.Text = "Loading...";
+    var data = await GetDataAsync();
+    StatusLabel.Text = data;
+}
+```
+Without async, the UI would `freeze until the operation completes`.
+
+## Exception Handling in Async Code
+Use `try–catch` around awaited calls:
+```csharp
+try
+{
+    string data = await GetDataAsync();
+    Console.WriteLine(data);
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error: {ex.Message}");
+}
+```
+✅ Explanation:<br>
+Exceptions thrown inside an async method are captured and rethrown when awaited.
+
+## async void vs async Task
+| Return Type     | Use Case                            | Notes                                        |
+| --------------- | ----------------------------------- | -------------------------------------------- |
+| `async void`    | Only for **event handlers**         | Exceptions can’t be awaited or caught easily |
+| `async Task`    | Use in most async methods           | Supports `await` and exception handling      |
+| `async Task<T>` | For async methods returning a value | Returns result asynchronously                |
+
+## async void in C#
+The `async void` return type is used to define asynchronous methods that don’t return a value and can’t be awaited.
+
+### Syntax Example
+```csharp
+public async void DoWorkAsync()
+{
+    await Task.Delay(1000);
+    Console.WriteLine("Work completed!");
+}
+```
+✅ Explanation:
+
+- The method runs asynchronously.
+
+- The await keyword allows non-blocking execution.
+
+- Since the return type is void, you can’t await this method from the caller.
+
+### When to Use async void
+🚫 **Rule of Thumb**: Avoid `async void` except for event handlers.
+
+### ✅ Valid Example — Event Handler
+```csharp
+private async void Button_Click(object sender, EventArgs e)
+{
+    await Task.Delay(2000);
+    MessageBox.Show("Button clicked!");
+}
+```
+✅ Explanation:
+
+- UI frameworks (like WPF or WinForms) require event handlers to return `void`.
+
+- `async void` works here because event handlers can’t return a `Task`.
+
+### Problems with async void
+#### 1. Cannot Be Awaited
+You can’t wait for an `async void` method to finish execution.
+```csharp
+DoWorkAsync(); // Fire-and-forget — no way to know when it completes
+```
+❌ Not suitable when you need to ensure the operation is done before continuing.
+
+#### 2. Exception Handling is Difficult
+Exceptions thrown inside an async void method can’t be caught by the caller.
+```csharp
+try
+{
+    DoWorkAsync(); // ❌ Exception here won’t be caught
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex.Message);
+}
+```
+✅ Instead, use async Task so the caller can handle exceptions:
+
+#### 3. Fire-and-Forget Behavior
+Because you can’t await it, async void methods execute independently —
+you have no control over when or if they complete.<br>
+This can cause:
+- Race conditions
+- Unexpected application state
+- Resource leaks in server or background code
+
+### Comparison: async void vs async Task
+| Feature                 | `async void`               | `async Task`                  |
+| ----------------------- | -------------------------- | ----------------------------- |
+| Return Type             | `void`                     | `Task`                        |
+| Can be awaited?         | ❌ No                       | ✅ Yes                         |
+| Exception Handling      | ❌ Cannot catch in caller   | ✅ Can catch using `try-catch` |
+| Usage                   | Event handlers only        | General async methods         |
+| Control over completion | ❌ No                       | ✅ Yes                         |
+| Best Practice           | Avoid unless event handler | Preferred for async methods   |
+
+### 🧾 Summary - async void
+| Concept                | Description                                                    |
+| ---------------------- | -------------------------------------------------------------- |
+| **`async void`**       | Defines an async method that doesn’t return a value or `Task`. |
+| **Main Use Case**      | Event handlers (e.g., UI events).                              |
+| **Cannot be awaited**  | The caller cannot wait for it to complete.                     |
+| **Exception Handling** | Exceptions can crash the app if unhandled.                     |
+| **Best Practice**      | Use only in event handlers; otherwise, prefer `async Task`.    |
+
+## 🧩 Task.WhenAll() in C#
+### 📘 Overview
+`Task.WhenAll()` is a method in C# used to `run multiple tasks concurrently and wait for all of them to complete`.<br>
+It allows asynchronous operations to execute in parallel, improving efficiency when tasks are independent of each other.
+### ⚙️ Syntax
+
+```csharp
+await Task.WhenAll(task1, task2, task3);
+```
+or for an array/list of tasks:
+```csharp
+var tasks = new List<Task> { task1, task2, task3 };
+await Task.WhenAll(tasks);
+```
+### 🧠 How It Works
+- `Task.WhenAll()` takes multiple Task objects (or Task<T> objects).
+
+- It starts all tasks simultaneously (if not already started).
+
+- It waits asynchronously until all tasks complete.
+
+- Returns a Task that completes when every provided task has finished execution.
+
+### ✅ Example 1 — Waiting for Multiple Tasks
+```csharp
+using System;
+using System.Threading.Tasks;
+
+class Program
+{
+    static async Task Main()
+    {
+        Task task1 = Task.Delay(2000); // Simulates 2 seconds work
+        Task task2 = Task.Delay(1000); // Simulates 1 second work
+
+        Console.WriteLine("Starting tasks...");
+
+        await Task.WhenAll(task1, task2);
+
+        Console.WriteLine("All tasks completed!");
+    }
+}
+/**
+Starting tasks...
+All tasks completed!
+**/
+```
+### ✅ Example 2 — Returning Values from Tasks
+```csharp
+using System;
+using System.Threading.Tasks;
+
+class Program
+{
+    static async Task Main()
+    {
+        Task<int> task1 = GetNumberAfterDelay(1, 2000);
+        Task<int> task2 = GetNumberAfterDelay(2, 1000);
+
+        int[] results = await Task.WhenAll(task1, task2);
+
+        Console.WriteLine($"Results: {string.Join(", ", results)}");
+    }
+
+    static async Task<int> GetNumberAfterDelay(int number, int delay)
+    {
+        await Task.Delay(delay);
+        return number * 10;
+    }
+}
+/**
+Results: 10, 20
+**/
+```
+### 🧩 Key Points
+| Feature                | Description                                          |
+| ---------------------- | ---------------------------------------------------- |
+| **Parallel Execution** | Runs all tasks concurrently.                         |
+| **Wait Behavior**      | Completes when all tasks are done.                   |
+| **Return Type**        | `Task` or `Task<T[]>` depending on inputs.           |
+| **Error Handling**     | Aggregates exceptions if multiple tasks fail.        |
+| **Use Case**           | When you have multiple independent async operations. |
+
+### 🚀 Best Practices
+1. ✅ Use Task.WhenAll() instead of multiple awaits when tasks are independent.
+
+2. ❌ Avoid blocking using .Wait() or .Result — always use await.
+
+3. ⚠️ Be mindful of shared resources — ensure thread safety.
+
+4. 💡 Use Task.WhenAny() if you need to proceed when any task finishes first.
+
+### 🧾 Summary
+1. Task.WhenAll() lets you efficiently run and await multiple async operations in parallel.
+
+2. It returns only when all tasks are completed or an exception occurs.
+
+3. It helps improve performance in scenarios like fetching data from multiple APIs or performing multiple I/O operations.
+
+## ⚠️ Exception Handling in Task.WhenAll()
+### 📘 Overview
+If one or more tasks throw exceptions, Task.WhenAll() does not fail immediately — instead, it waits for all tasks to complete first.<br>
+
+After all tasks finish, it throws a single `AggregateException` that contains all the individual exceptions thrown by those tasks.
+
+### 🧠 Key Concept
+1. `Task.WhenAll()` collects all exceptions from the tasks that faulted.
+
+2. It then wraps them in an `AggregateException` and rethrows it.
+
+3. You can access each individual exception through the `InnerExceptions` property.
+
+### ✅ Example — Multiple Tasks Throw Exceptions
+```csharp
+using System;
+using System.Threading.Tasks;
+
+class Program
+{
+    static async Task Main()
+    {
+        try
+        {
+            await Task.WhenAll(Task1(), Task2(), Task3());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Main catch: {ex.GetType().Name}");
+            
+            if (ex is AggregateException aggregateEx)
+            {
+                foreach (var inner in aggregateEx.InnerExceptions)
+                {
+                    Console.WriteLine($" - Inner exception: {inner.Message}");
+                }
+            }
+        }
+    }
+
+    static async Task Task1()
+    {
+        await Task.Delay(500);
+        throw new InvalidOperationException("Task1 failed.");
+    }
+
+    static async Task Task2()
+    {
+        await Task.Delay(1000);
+        throw new ArgumentException("Task2 failed.");
+    }
+
+    static async Task Task3()
+    {
+        await Task.Delay(1500);
+        throw new NullReferenceException("Task3 failed.");
+    }
+}
+/**
+Main catch: AggregateException
+ - Inner exception: Task1 failed.
+ - Inner exception: Task2 failed.
+ - Inner exception: Task3 failed.
+**/
+```
+### 🧩 Why AggregateException?
+When working with asynchronous operations:
+
+1. Multiple tasks can fail independently and concurrently.
+
+2. It’s not possible to represent multiple errors with a single exception type.
+
+3. Therefore, .NET wraps them into an AggregateException, which acts as a container for all the thrown exceptions.
+
+### 🔍 Handling Individual Exceptions
+You can handle individual exceptions like this:
+```csharp
+try
+{
+    await Task.WhenAll(Task1(), Task2());
+}
+catch (Exception ex)
+{
+    if (ex is AggregateException ae)
+    {
+        ae.Handle(inner =>
+        {
+            if (inner is InvalidOperationException)
+            {
+                Console.WriteLine("Handled InvalidOperationException.");
+                return true;
+            }
+            return false; // rethrow others
+        });
+    }
+}
+```
+💡 AggregateException.Handle() allows you to filter and selectively handle specific exception types.
+
+### ⚠️ Important Notes
+| Concept                 | Explanation                                                           |
+| ----------------------- | --------------------------------------------------------------------- |
+| **Waits for all tasks** | Even if one task fails early, others continue running.                |
+| **AggregateException**  | Contains all individual exceptions.                                   |
+| **InnerExceptions**     | A collection of the actual exceptions thrown.                         |
+| **Handle()**            | Used to process or filter specific exceptions.                        |
+| **Cancellation**        | If a task is canceled, it’s represented as a `TaskCanceledException`. |
+
+### 🧾 Summary
+1. Task.WhenAll() throws after all tasks complete, even if some fail.
+
+2. It aggregates multiple exceptions into one AggregateException.
+
+3. You can use:
+        
+    1. `InnerExceptions` → to inspect each exception.
+
+    2. `Handle()` → to manage exceptions conditionally.
+
+### ✅ Best Practice Tip:
+Always wrap `Task.WhenAll()` inside a try/catch block when tasks might fail independently,and inspect the `AggregateException.InnerExceptions` for detailed error information.
+
+## 🧾 Summary
+| Concept                    | Description                                         |
+| -------------------------- | --------------------------------------------------- |
+| **async / await**          | Enables non-blocking asynchronous programming       |
+| **Task / Task<T>**         | Represents ongoing or future asynchronous work      |
+| **await**                  | Suspends execution until the awaited task completes |
+| **Task.WhenAll / WhenAny** | Run multiple async operations concurrently          |
+| **Exception Handling**     | Use `try-catch` with `await`                        |
+| **Best Practice**          | Avoid `async void` (except for event handlers)      |
