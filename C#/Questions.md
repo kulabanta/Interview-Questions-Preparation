@@ -2409,3 +2409,153 @@ Success: 10, Fail: 2
 | **Deconstruction** | Extracts tuple values into variables.                 |
 | **Named Elements** | Makes code more readable (e.g., `person.Name`).       |
 | **Use Case**       | Commonly used to return multiple values from methods. |
+
+# 🎯 22. Pattern Matching in C#
+## What is Pattern Matching?
+`Pattern Matching in C#` allows you to `check an object’s type, shape, or value, and extract data from it in a concise and readable way`.
+
+It’s a powerful feature introduced in C# 7.0 and enhanced in later versions (C# 8, 9, 10, and 11).
+
+## Why Use Pattern Matching?
+✅ Simplifies conditional logic<br>
+✅ Reduces boilerplate `if` / `switch` code<br>
+✅ Improves readability and safety (especially with type checks)
+
+### 1. Type Pattern
+Used to `check an object’s type and cast it safely` in a single statement.
+```csharp
+object obj = "Hello World";
+
+if (obj is string message)
+{
+    Console.WriteLine(message.ToUpper()); // Output: HELLO WORLD
+}
+```
+✅ Explanation:
+
+1. `is string message` checks if obj is a `string`.
+
+2. If true, obj is automatically cast to a string variable named message.
+### 2. Constant Pattern
+Checks if a variable matches a specific constant value.
+```csharp
+int number = 10;
+
+if (number is 10)
+{
+    Console.WriteLine("Number is ten!");
+}
+```
+✅ Explanation:
+1. No need for `==`; pattern matching handles the comparison.
+
+### 3. Relational Pattern (C# 9.0+)
+Allows comparison operators inside patterns.
+```csharp
+int age = 25;
+
+if (age is > 18 and < 60)
+{
+    Console.WriteLine("Adult age group");
+}
+```
+✅ Explanation:
+1. Checks if the value of age is greater than 18 and less than 60.
+
+### 4. Logical Patterns (and/or/not)
+Combine multiple patterns using logical operators.
+```csharp
+string role = "Admin";
+
+if (role is "Admin" or "Manager")
+{
+    Console.WriteLine("Has elevated access");
+}
+
+if (role is not "Guest")
+{
+    Console.WriteLine("User is not a guest");
+}
+```
+✅ Explanation:
+
+1. `or` → Matches any of the patterns
+
+2. `and` → Requires all conditions to match
+
+3. `not` → Negates a pattern
+
+### 5. Switch Pattern Matching
+Pattern matching also works with the `switch` expression (modern syntax).
+```csharp
+object value = 100;
+
+string result = value switch
+{
+    int i when i > 50 => "Large number",
+    int i => "Small number",
+    string s => $"String of length {s.Length}",
+    null => "Null value",
+    _ => "Unknown type"
+};
+
+Console.WriteLine(result); // Output: Large number
+```
+✅ Explanation:
+
+1. Each case can check type and condition using `when`.
+
+2. `_` is the default pattern.
+
+### 6. Property Pattern (C# 8.0+)
+Checks the values of object properties directly.
+```csharp
+var person = new { Name = "Alice", Age = 28 };
+
+if (person is { Name: "Alice", Age: > 18 })
+{
+    Console.WriteLine("Adult named Alice");
+}
+```
+✅ Explanation:
+1. You can check multiple properties in a single expression.
+
+### 7. Positional Pattern (C# 8.0+)
+Used with `records` or types that support `deconstruction`.
+```csharp
+public record Point(int X, int Y);
+
+var point = new Point(10, 20);
+
+if (point is (10, 20))
+{
+    Console.WriteLine("Point at (10, 20)");
+}
+```
+✅ Explanation:
+1. Deconstructs the record and matches values positionally.
+### 8. Pattern Matching with `switch` Expression (Modern Syntax)
+```csharp
+string GetCategory(int age) => age switch
+{
+    < 13 => "Child",
+    >= 13 and < 20 => "Teenager",
+    >= 20 and < 60 => "Adult",
+    _ => "Senior"
+};
+
+Console.WriteLine(GetCategory(25)); // Output: Adult
+```
+✅ Explanation:
+1. This concise `switch` expression makes conditional logic easier to read.
+
+## 🧾 Summary
+| Pattern Type           | Description                    | Example                             |
+| ---------------------- | ------------------------------ | ----------------------------------- |
+| **Type Pattern**       | Checks object type             | `if (obj is string s)`              |
+| **Constant Pattern**   | Matches constant value         | `if (num is 10)`                    |
+| **Relational Pattern** | Compares numeric values        | `if (age is > 18 and < 60)`         |
+| **Logical Pattern**    | Combines patterns              | `if (role is "Admin" or "Manager")` |
+| **Property Pattern**   | Matches property values        | `if (person is { Age: > 18 })`      |
+| **Positional Pattern** | Matches tuple/record positions | `if (point is (10, 20))`            |
+| **Switch Pattern**     | Pattern-based branching        | `x switch { ... }`                  |
