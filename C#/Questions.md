@@ -1855,3 +1855,557 @@ public class Program
 ### 🧠 Interview Tip
 **Q.** What’s the difference between an Event and a Delegate?<br>
 **Answer**: A delegate is a method reference type, while an event is a language feature that restricts access to delegates so that only the declaring class can invoke them. Events are the publish-subscribe layer built on top of delegates.
+
+# ⚙️18. Task in C#
+## 🧩 Definition
+
+A `Task` in C# represents an `asynchronous operation that can run independently of the main thread`.
+It is part of the `Task Parallel Library (TPL)` and is defined in the `System.Threading.Tasks` namespace.
+
+Tasks simplify concurrent programming by handling thread management, synchronization, and result returning automatically.
+
+## 🧠 Purpose
+
+- To run code asynchronously without blocking the main thread.
+
+- To return results from background operations.
+
+- To handle exceptions, cancellation, and continuations easily.
+
+- To improve performance and responsiveness in applications.
+
+## 🧾 Basic Example
+```csharp
+using System;
+using System.Threading.Tasks;
+
+class Program
+{
+    static void Main()
+    {
+        Task task = Task.Run(() =>
+        {
+            for (int i = 1; i <= 5; i++)
+            {
+                Console.WriteLine($"Task running: {i}");
+            }
+        });
+
+        task.Wait(); // Wait for the task to complete
+        Console.WriteLine("Main method completed.");
+    }
+}
+/**
+Task running: 1
+Task running: 2
+Task running: 3
+Task running: 4
+Task running: 5
+Main method completed.
+**/
+```
+
+### 🔹 Task with Return Value
+```csharp
+Task<int> task = Task.Run(() =>
+{
+    int sum = 0;
+    for (int i = 1; i <= 5; i++)
+        sum += i;
+    return sum;
+});
+
+int result = task.Result; // Blocks until completed
+Console.WriteLine($"Sum: {result}");
+
+/**
+Sum: 15
+**/
+```
+### 🔹 Task with async/await (Recommended Way)
+```csharp
+using System;
+using System.Threading.Tasks;
+
+class Program
+{
+    static async Task Main()
+    {
+        int result = await CalculateSumAsync();
+        Console.WriteLine($"Result: {result}");
+    }
+
+    static async Task<int> CalculateSumAsync()
+    {
+        await Task.Delay(1000); // Simulate work
+        return 5 + 10;
+    }
+}
+/**
+Result: 15
+**/
+```
+## ⚙️ Key Features of Task
+| Feature                  | Description                                  |
+| ------------------------ | -------------------------------------------- |
+| **Namespace**            | `System.Threading.Tasks`                     |
+| **Return Type**          | `Task` or `Task<TResult>`                    |
+| **Supports async/await** | Yes ✅                                        |
+| **Cancellation**         | Via `CancellationToken`                      |
+| **Exception Handling**   | Through `try/catch` or `task.ContinueWith()` |
+| **Thread Pool Usage**    | Uses threads from the CLR-managed pool       |
+| **Continuation**         | Allows chaining tasks using `ContinueWith()` |
+
+## 🧩 Example: Task Continuation
+```csharp
+Task.Run(() => Console.WriteLine("Task 1"))
+    .ContinueWith(t => Console.WriteLine("Task 2 after Task 1"))
+    .ContinueWith(t => Console.WriteLine("Task 3 after Task 2"));
+/**
+Task 1
+Task 2 after Task 1
+Task 3 after Task 2
+**/
+```
+
+### 🔹 Task Cancellation Example
+```csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class Program
+{
+    static async Task Main()
+    {
+        CancellationTokenSource cts = new();
+        var token = cts.Token;
+
+        Task task = Task.Run(() =>
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                token.ThrowIfCancellationRequested();
+                Console.WriteLine($"Working... {i}");
+                Thread.Sleep(300);
+            }
+        }, token);
+
+        cts.CancelAfter(1000); // Cancel after 1 second
+
+        try
+        {
+            await task;
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Task was cancelled.");
+        }
+    }
+}
+/**
+Working... 0  
+Working... 1  
+Working... 2  
+Task was cancelled.
+
+**/
+```
+## 🆚 Task vs Thread (Quick Comparison)
+| Feature                  | **Task**                | **Thread**                   |
+| ------------------------ | ----------------------- | ---------------------------- |
+| **Abstraction Level**    | High                    | Low                          |
+| **Return Value**         | ✅ Yes (`Task<TResult>`) | ❌ No                         |
+| **Cancellation Support** | ✅ Yes                   | ❌ No                         |
+| **Exception Handling**   | Easy (`try/catch`)      | Manual                       |
+| **Async/Await Support**  | ✅ Yes                   | ❌ No                         |
+| **Performance**          | Efficient (Thread Pool) | Expensive (dedicated thread) |
+
+## 💡 Interview Tip
+✅ “A Task in C# represents an asynchronous operation.
+It’s a higher-level abstraction built on top of threads, offering better performance, exception handling, and async support.”
+
+# ⚙️19. Thread in C#
+## 🧩 Definition
+
+A `Thread` in C# represents the `smallest unit of execution within a process`.
+Each thread can execute code independently, allowing multiple operations to run concurrently.
+
+Threads are managed by the operating system and are part of the `System.Threading` namespace.
+
+## 🧠 Purpose
+- To perform multiple tasks simultaneously (parallelism).
+
+- To improve responsiveness in applications (e.g., UI remains active while background work runs).
+
+- To run background operations independently of the main program flow.
+
+## 🧾 Basic Example: Creating and Starting a Thread
+```csharp
+using System;
+using System.Threading;
+
+class Program
+{
+    static void Main()
+    {
+        Thread thread = new Thread(PrintNumbers);
+        thread.Start(); // Start the new thread
+
+        Console.WriteLine("Main thread continues...");
+    }
+
+    static void PrintNumbers()
+    {
+        for (int i = 1; i <= 5; i++)
+        {
+            Console.WriteLine($"Worker thread: {i}");
+            Thread.Sleep(500); // Simulate some work
+        }
+    }
+}
+/**
+Main thread continues...
+Worker thread: 1
+Worker thread: 2
+Worker thread: 3
+Worker thread: 4
+Worker thread: 5
+**/
+```
+### 🔹 Creating a Thread with Lambda Expression
+```csharp
+Thread thread = new Thread(() =>
+{
+    Console.WriteLine("Thread started using lambda!");
+});
+thread.Start();
+```
+
+## ⚙️ Key Properties of Thread
+| Property      | Description                                          |
+| ------------- | ---------------------------------------------------- |
+| **Namespace** | `System.Threading`                                   |
+| **Start()**   | Begins execution of the thread                       |
+| **Sleep(ms)** | Pauses execution for a specified time                |
+| **Abort()**   | Terminates the thread (⚠️ Deprecated)                |
+| **IsAlive**   | Checks if the thread is still running                |
+| **Join()**    | Blocks the calling thread until the thread completes |
+
+## 🧩 Example: Using Join()
+```csharp
+Thread thread = new Thread(() =>
+{
+    Console.WriteLine("Thread starting...");
+    Thread.Sleep(2000);
+    Console.WriteLine("Thread completed.");
+});
+
+thread.Start();
+thread.Join(); // Wait for the thread to finish before continuing
+Console.WriteLine("Main thread resumes after join.");
+
+/**
+Thread starting...
+Thread completed.
+Main thread resumes after join.
+**/
+```
+### 🔹 Foreground vs Background Threads
+| Type                  | Description                                            |
+| --------------------- | ------------------------------------------------------ |
+| **Foreground Thread** | Keeps the process alive until it finishes (default).   |
+| **Background Thread** | Automatically ends when all foreground threads finish. |
+
+```csharp
+Thread backgroundThread = new Thread(() =>
+{
+    Console.WriteLine("Background thread running...");
+    Thread.Sleep(2000);
+    Console.WriteLine("Background thread completed.");
+});
+
+backgroundThread.IsBackground = true;
+backgroundThread.Start();
+Console.WriteLine("Main thread ending...");
+/**
+Background thread running...
+Main thread ending...
+**/
+// (The program may end before the background thread finishes.)
+```
+## 🧩 Example: Thread with Parameters
+```csharp
+Thread thread = new Thread(PrintMessage);
+thread.Start("Hello from Thread!");
+
+static void PrintMessage(object message)
+{
+    Console.WriteLine(message);
+}
+// Hello from Thread!
+```
+## ⚙️ Thread Safety
+When multiple threads access shared data, it can cause `race conditions` or `data corruption`.
+To prevent this, use `locks` or `thread synchronization` techniques.
+
+### Example using `lock` keyword:
+```csharp
+static object lockObj = new();
+static int counter = 0;
+
+static void Increment()
+{
+    for (int i = 0; i < 1000; i++)
+    {
+        lock (lockObj)
+        {
+            counter++;
+        }
+    }
+}
+
+```
+## 🧠 Advantages of Using Threads
+
+- Improves application responsiveness.
+
+- Enables parallel execution of code.
+
+- Utilizes multiple CPU cores efficiently.
+
+## ⚠️ Disadvantages
+- Difficult to manage and debug.
+
+- Can cause race conditions and deadlocks.
+
+- Consumes more memory and resources than higher-level abstractions like Task.
+
+## 💡 Interview Tip
+✅ “A Thread is the smallest unit of execution in a process.
+It allows concurrent code execution but requires manual management of synchronization and lifecycle.”
+
+# 📘 20. Records in C#
+## 🧩 What Are Records?
+Records are `reference types` introduced in C# 9.0 designed to make it easier to create `immutable data models (data-carrying objects)` with built-in value equality.
+
+**A record is like a class, but it’s optimized for holding data rather than behavior.**
+
+## 🧱 Key Characteristics
+| Feature                       | Description                                                                                                                                  |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Immutability**              | Record properties are typically *init-only* — they can be set only during initialization.                                                    |
+| **Value-based Equality**      | Two records with the same data are considered *equal*, unlike classes which use *reference equality* by default.                             |
+| **Concise Syntax**            | Records can be declared with a *positional syntax* that automatically generates constructors, `Equals()`, `GetHashCode()`, and `ToString()`. |
+| **Built-in with-expressions** | You can easily create copies of records with modified properties using the `with` expression.                                                |
+
+## 🧠 Syntax
+### 1. Basic Record Declaration
+```csharp
+public record Person
+{
+    public string FirstName { get; init; }
+    public string LastName { get; init; }
+}
+```
+### 2. Positional Record (Concise Form)
+```csharp
+public record Person(string FirstName, string LastName);
+```
+This automatically generates:
+
+- A constructor with parameters FirstName and LastName
+
+- Read-only properties
+
+- Equals(), GetHashCode(), and ToString()
+
+- A `Deconstruct()` method
+
+## 🔁 Example: Equality
+```csharp
+var p1 = new Person("John", "Doe");
+var p2 = new Person("John", "Doe");
+
+Console.WriteLine(p1 == p2); // ✅ True (Value equality)
+```
+_If this were a class, the output would be `False` because classes compare `references by default`._
+
+## 🧍‍♂️ Copying with `with` Expression
+You can create a copy of a record while changing some values:
+```csharp
+var p1 = new Person("John", "Doe");
+var p2 = p1 with { LastName = "Smith" };
+
+Console.WriteLine(p2); // Output: Person { FirstName = John, LastName = Smith }
+```
+
+## 🧩 Inheritance with Records
+Records can be `inherited` — and they preserve `value equality` across hierarchies.
+
+```csharp
+public record Person(string Name);
+public record Employee(string Name, string Department) : Person(Name);
+```
+
+## 🧍‍♀️ Mutable Records (Not Recommended)
+You can make record properties mutable, but that goes against their design for immutability.
+```csharp
+public record MutablePerson
+{
+    public string Name { get; set; } // mutable
+}
+```
+## ⚖️ Record vs Class
+| Feature          | Record                          | Class                    |
+| ---------------- | ------------------------------- | ------------------------ |
+| Equality         | Value-based                     | Reference-based          |
+| Immutability     | Default (with `init`)           | Mutable by default       |
+| Boilerplate Code | Minimal                         | Verbose                  |
+| Typical Use Case | DTOs, Models, Immutable Objects | Business Logic, Entities |
+
+## Accessing Properties
+You can access record properties just like class properties — using the `dot (.)` operator.
+```csharp
+Console.WriteLine(person.FirstName);  // Output: John
+Console.WriteLine(person.LastName);   // Output: Doe
+```
+### ✅ Explanation:
+
+- Each property in a record is `public` and `read-only` by default (when using positional syntax).
+
+- You can read its value directly.
+
+## Records with Property Initializers
+If you define a record using property syntax, you can access the properties the same way:
+```csharp
+public record Employee
+{
+    public string Name { get; init; }
+    public string Department { get; init; }
+}
+
+var emp = new Employee { Name = "Alice", Department = "HR" };
+
+Console.WriteLine(emp.Name);        // Output: Alice
+Console.WriteLine(emp.Department);  // Output: HR
+```
+
+## Using Deconstruction (Optional Way)
+You can `deconstruct` record properties into local variables.
+```csharp
+var person = new Person("John", "Doe");
+
+var (firstName, lastName) = person;
+
+Console.WriteLine(firstName); // Output: John
+Console.WriteLine(lastName);  // Output: Doe
+```
+
+## 🧭 Summary
+| Concept           | Description                                    |
+| ----------------- | ---------------------------------------------- |
+| **Record Type**   | Reference type optimized for immutable data    |
+| **Introduced In** | C# 9.0                                         |
+| **Equality Type** | Value-based                                    |
+| **Common Usage**  | DTOs, Immutable Models, Data Transfer          |
+| **Key Feature**   | `with` expression for non-destructive mutation |
+
+# 🧩 21. Tuples in C#
+
+## What is a Tuple?
+`Tuple` in C# is a data structure that allows you to store `multiple values of different data types` in a `single object without creating a custom class or struct`.
+
+It’s often used to `return multiple values from a method` easily.
+
+## Syntax
+✅ Using Classic Tuple Class (Before C# 7.0)
+```csharp
+Tuple<int, string, bool> person = new Tuple<int, string, bool>(1, "John", true);
+
+Console.WriteLine(person.Item1); // 1
+Console.WriteLine(person.Item2); // John
+Console.WriteLine(person.Item3); // True
+```
+🔸 Item1, Item2, etc., are the default property names.
+
+✅ Using Modern Value Tuples (C# 7.0 and Later)
+Value tuples provide `better syntax and named fields`:
+```csharp
+var person = (Id: 1, Name: "John", IsActive: true);
+
+Console.WriteLine(person.Id);       // 1
+Console.WriteLine(person.Name);     // John
+Console.WriteLine(person.IsActive); // True
+```
+
+## Returning Multiple Values from a Method
+Tuples are commonly used to return multiple values from a function:
+```csharp
+public (int Id, string Name) GetPerson()
+{
+    return (1, "Alice");
+}
+
+var person = GetPerson();
+Console.WriteLine(person.Id);   // 1
+Console.WriteLine(person.Name); // Alice
+```
+✅ Explanation:
+
+- The method returns a named tuple.
+
+- You can access the values using the tuple property names.
+
+## Deconstructing a Tuple
+You can `deconstruct` a tuple into separate variables:
+
+```csharp
+var (id, name) = GetPerson();
+
+Console.WriteLine(id);   // 1
+Console.WriteLine(name); // Alice
+```
+## Nested Tuples
+Tuples can contain other tuples:
+```csharp
+var nested = (Id: 1, Details: ("Alice", 25));
+
+Console.WriteLine(nested.Details.Item1); // Alice
+Console.WriteLine(nested.Details.Item2); // 25
+```
+## Comparison: `Tuple` vs `ValueTuple`
+| Feature             | `Tuple<T1, T2, ...>` | `(T1, T2, ...)` *(ValueTuple)* |
+| ------------------- | -------------------- | ------------------------------ |
+| Namespace           | `System`             | `System`                       |
+| Introduced In       | .NET 4.0             | C# 7.0                         |
+| Mutable             | No (Immutable)       | Yes (Mutable)                  |
+| Field Names         | Item1, Item2...      | Custom names allowed           |
+| Performance         | Reference Type       | Value Type (faster)            |
+| Requires Allocation | Yes                  | No (stored on stack)           |
+
+## Example — Practical Use Case
+Returning multiple results after processing data:
+```csharp
+public (int SuccessCount, int FailCount) ProcessData()
+{
+    int success = 10;
+    int fail = 2;
+    return (success, fail);
+}
+
+var result = ProcessData();
+Console.WriteLine($"Success: {result.SuccessCount}, Fail: {result.FailCount}");
+/**
+Success: 10, Fail: 2
+**/
+```
+
+## 🧾 Summary
+| Concept            | Description                                           |
+| ------------------ | ----------------------------------------------------- |
+| **Tuple**          | Stores multiple items of different types.             |
+| **ValueTuple**     | Struct version of tuple (introduced in C# 7).         |
+| **Deconstruction** | Extracts tuple values into variables.                 |
+| **Named Elements** | Makes code more readable (e.g., `person.Name`).       |
+| **Use Case**       | Commonly used to return multiple values from methods. |
