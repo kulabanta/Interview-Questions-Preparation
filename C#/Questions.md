@@ -3097,3 +3097,230 @@ That’s exactly how the async state machine works — it “bookmarks” the po
 | **Key Method**     | `MoveNext()` — controls async execution flow.                    |
 | **State Tracking** | `_state` variable keeps track of where to resume.                |
 | **Continuation**   | Awaits trigger continuation by calling `MoveNext()` again.       |
+
+# ⚙️ 25. Parallel Class in C#
+## 📘 Overview
+The `Parallel` class in C# is part of the `System.Threading.Tasks` namespace and provides methods to perform `parallel execution of operations on multiple threads`.
+
+It is mainly used for `data parallelism`, where the same operation is performed on different elements of a collection simultaneously.
+
+## 🧠 Key Purpose
+The `Parallel` class helps you `run independent tasks concurrently` to:
+- Improve performance.
+- Utilize multiple CPU cores.
+- Reduce execution time for CPU-bound operations.
+
+## ✅ Common Methods in Parallel Class
+| Method                   | Description                                                 |
+| ------------------------ | ----------------------------------------------------------- |
+| **`Parallel.For()`**     | Executes a loop in which iterations run in parallel.        |
+| **`Parallel.ForEach()`** | Executes a `foreach` loop where iterations run in parallel. |
+| **`Parallel.Invoke()`**  | Executes multiple independent actions concurrently.         |
+
+### 🔹 Example 1 — Using Parallel.For()
+```csharp
+using System;
+using System.Threading.Tasks;
+
+class Program
+{
+    static void Main()
+    {
+        Parallel.For(1, 6, i =>
+        {
+            Console.WriteLine($"Task {i} running on thread {Task.CurrentId}");
+        });
+
+        Console.WriteLine("All tasks completed.");
+    }
+}
+/*
+Task 2 running on thread 3
+Task 4 running on thread 5
+Task 1 running on thread 2
+Task 3 running on thread 4
+Task 5 running on thread 6
+All tasks completed.
+*/
+```
+💡 The order is `non-deterministic` — tasks run `concurrently`.
+
+### 🔹 Example 2 — Using Parallel.ForEach()
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+class Program
+{
+    static void Main()
+    {
+        var items = new List<string> { "A", "B", "C", "D" };
+
+        Parallel.ForEach(items, item =>
+        {
+            Console.WriteLine($"Processing {item} on thread {Task.CurrentId}");
+        });
+    }
+}
+```
+✅ Ideal for performing the same operation on each element of a collection concurrently.
+
+### 🔹 Example 3 — Using Parallel.Invoke()
+```csharp
+using System;
+using System.Threading.Tasks;
+
+class Program
+{
+    static void Main()
+    {
+        Parallel.Invoke(
+            () => Console.WriteLine("Task 1 running"),
+            () => Console.WriteLine("Task 2 running"),
+            () => Console.WriteLine("Task 3 running")
+        );
+
+        Console.WriteLine("All actions completed.");
+    }
+}
+```
+🔸 Executes multiple independent methods concurrently.
+
+## ⚙️ How It Works
+- The Parallel class uses the ThreadPool internally.
+- It automatically divides the workload across available processor cores.
+- It balances execution dynamically using work-stealing for optimal CPU usage.
+
+## ⚠️ Important Notes
+| Concept                | Description                                                                      |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| **Thread Usage**       | Uses multiple threads from the ThreadPool.                                       |
+| **Blocking**           | `Parallel` methods are **blocking** — they don’t return until all tasks finish.  |
+| **Order of Execution** | Not guaranteed; tasks may run in any order.                                      |
+| **Exceptions**         | If multiple tasks throw exceptions, they are wrapped in an `AggregateException`. |
+| **Cancellation**       | Can be supported via `ParallelOptions` and `CancellationToken`.                  |
+
+### 🔹 Example — Using ParallelOptions
+```csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+class Program
+{
+    static void Main()
+    {
+        var cts = new CancellationTokenSource();
+        var options = new ParallelOptions()
+        {
+            MaxDegreeOfParallelism = 2, // Limit concurrency
+            CancellationToken = cts.Token
+        };
+
+        try
+        {
+            Parallel.For(0, 10, options, i =>
+            {
+                Console.WriteLine($"Processing {i}");
+                if (i == 5)
+                    cts.Cancel(); // cancel after 5
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Operation was cancelled.");
+        }
+    }
+}
+```
+## 🧾 Summary - Paralle.ForEach
+| Feature                | Description                                          |
+| ---------------------- | ---------------------------------------------------- |
+| **Class**              | `System.Threading.Tasks.Parallel`                    |
+| **Used For**           | Parallel loops and concurrent task execution.        |
+| **Methods**            | `For`, `ForEach`, `Invoke`.                          |
+| **Thread Handling**    | Uses ThreadPool threads automatically.               |
+| **Exception Handling** | Throws `AggregateException` for multiple exceptions. |
+| **Cancellation**       | Supported via `ParallelOptions`.                     |
+| **Blocking Nature**    | Methods block until all tasks are complete.          |
+
+when working with asynchronous operations, you can use `Parallel.ForEachAsync` (introduced in .NET 6) which supports `async delegates`.
+
+## ⚙️ Syntax
+```csharp
+await Parallel.ForEachAsync(source, async (item, cancellationToken) =>
+{
+    await SomeAsyncOperation(item);
+});
+```
+## 🧠 Key Points
+| Feature             | Description                                         |
+| ------------------- | --------------------------------------------------- |
+| **Namespace**       | `System.Threading.Tasks`                            |
+| **Available since** | .NET 6                                              |
+| **Purpose**         | Run asynchronous operations in parallel efficiently |
+| **Delegate type**   | `Func<TSource, CancellationToken, ValueTask>`       |
+| **Return type**     | `ValueTask` (awaitable)                             |
+
+## 🧩 Example
+```csharp
+using System;
+using System.Threading.Tasks;
+
+class Program
+{
+    static async Task Main()
+    {
+        string[] urls = {
+            "https://example.com",
+            "https://microsoft.com",
+            "https://github.com"
+        };
+
+        await Parallel.ForEachAsync(urls, async (url, cancellationToken) =>
+        {
+            // Simulate an async operation (e.g., HTTP call)
+            await Task.Delay(1000, cancellationToken);
+            Console.WriteLine($"Processed: {url}");
+        });
+
+        Console.WriteLine("All URLs processed!");
+    }
+}
+/*
+Processed: https://example.com
+Processed: https://microsoft.com
+Processed: https://github.com
+All URLs processed!
+*/
+```
+(Order may vary since operations run in parallel.)
+
+## ⚠️ Limitations
+
+- You can’t control max degree of parallelism directly (though you can specify via options).
+- Not suitable for CPU-bound operations — use regular Parallel.For for those.
+- Works only with .NET 6 and later.
+### ⚙️ Example with Options
+```csharp
+var options = new ParallelOptions
+{
+    MaxDegreeOfParallelism = 3
+};
+
+await Parallel.ForEachAsync(urls, options, async (url, token) =>
+{
+    await Task.Delay(1000, token);
+    Console.WriteLine($"Processed with limit: {url}");
+});
+```
+## 🧾 Summary - Parallel.ForEachAsync
+| Concept             | Description                                |
+| ------------------- | ------------------------------------------ |
+| **Method**          | `Parallel.ForEachAsync()`                  |
+| **Supports async?** | ✅ Yes                                      |
+| **Suitable for**    | I/O-bound async tasks                      |
+| **Return Type**     | `ValueTask`                                |
+| **Introduced in**   | .NET 6                                     |
+| **Advantage**       | Combines parallelism with async efficiency |
