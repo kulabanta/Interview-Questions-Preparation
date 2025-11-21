@@ -3324,3 +3324,112 @@ await Parallel.ForEachAsync(urls, options, async (url, token) =>
 | **Return Type**     | `ValueTask`                                |
 | **Introduced in**   | .NET 6                                     |
 | **Advantage**       | Combines parallelism with async efficiency |
+
+# 🧵 26. Multithreading in C#
+## 📘 Overview
+`Multithreading` in C# is the ability to `execute multiple threads concurrently within a single process`.<br>
+It allows programs to perform multiple operations at the same time, improving performance and responsiveness—especially in applications with CPU-bound or I/O-bound tasks.
+
+## ⚙️ What Is a Thread?
+A `thread` is the smallest unit of execution within a process.<br>
+Every C# application starts with one main thread, and you can create additional threads to perform tasks concurrently.
+
+## 🧩 Why Use Multithreading?
+| Benefit                | Description                                                                 |
+| ---------------------- | --------------------------------------------------------------------------- |
+| **Concurrency**        | Execute multiple operations at once.                                        |
+| **Responsiveness**     | Keep UI responsive (important for GUI apps).                                |
+| **Performance**        | Utilize multiple CPU cores for better throughput.                           |
+| **Separation of Work** | Run independent tasks (like logging, file I/O, or computation) in parallel. |
+
+## 🧠 Example: Creating and Starting a Thread
+```csharp
+using System;
+using System.Threading;
+
+class Program
+{
+    static void Main()
+    {
+        Thread thread = new Thread(DoWork);
+        thread.Start(); // Start the thread
+
+        Console.WriteLine("Main thread running...");
+    }
+
+    static void DoWork()
+    {
+        Console.WriteLine("Worker thread started...");
+        Thread.Sleep(1000); // Simulate some work
+        Console.WriteLine("Worker thread finished.");
+    }
+}
+/*
+Main thread running...
+Worker thread started...
+Worker thread finished.
+*/
+```
+## 🧰 Thread Lifecycle
+| State             | Description                                                      |
+| ----------------- | ---------------------------------------------------------------- |
+| **Unstarted**     | Thread created but not yet started.                              |
+| **Running**       | Thread is executing code.                                        |
+| **WaitSleepJoin** | Thread is blocked (e.g., `Sleep`, waiting on a lock, or `Join`). |
+| **Stopped**       | Thread has finished execution.                                   |
+
+## ⚙️ Example: Running Multiple Threads
+```csharp
+for (int i = 1; i <= 3; i++)
+{
+    int threadId = i; // capture variable
+    Thread thread = new Thread(() =>
+    {
+        Console.WriteLine($"Thread {threadId} started.");
+        Thread.Sleep(500);
+        Console.WriteLine($"Thread {threadId} finished.");
+    });
+    thread.Start();
+}
+```
+## ⚡ Important Concepts in Multithreading
+| Concept               | Description                                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------ |
+| **Thread Pooling**    | Managed threads reused by the .NET runtime (e.g., `ThreadPool.QueueUserWorkItem`).                     |
+| **Synchronization**   | Prevents data corruption when multiple threads access shared data (`lock`, `Monitor`, `Mutex`).        |
+| **Deadlock**          | When two or more threads are waiting for each other indefinitely.                                      |
+| **Race Condition**    | When threads access shared data simultaneously without synchronization, causing unpredictable results. |
+| **Context Switching** | Switching CPU execution between threads.                                                               |
+
+## 🔒 Synchronization Example (Using `lock`)
+```csharp
+class Counter
+{
+    private int count = 0;
+    private readonly object lockObj = new object();
+
+    public void Increment()
+    {
+        lock (lockObj)
+        {
+            count++;
+            Console.WriteLine($"Count: {count}");
+        }
+    }
+}
+```
+## 🚀 Modern Alternatives to Threads
+| Technique                | Description                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------ |
+| **Tasks (`Task` class)** | Higher-level abstraction over threads. Manages scheduling and pooling automatically. |
+| **`async` / `await`**    | Simplifies asynchronous programming (especially for I/O-bound operations).           |
+| **Parallel Class**       | Executes loops or actions concurrently (`Parallel.For`, `Parallel.ForEach`).         |
+
+## 🧩 Summary
+| Feature                | Description                                               |
+| ---------------------- | --------------------------------------------------------- |
+| **What it is**         | Running multiple threads concurrently within one process. |
+| **Main advantage**     | Better performance and responsiveness.                    |
+| **Key API**            | `System.Threading` namespace                              |
+| **Common issues**      | Race conditions, deadlocks, thread contention.            |
+| **Modern replacement** | `Task`, `async/await`, and `Parallel` APIs.               |
