@@ -3433,3 +3433,137 @@ class Counter
 | **Key API**            | `System.Threading` namespace                              |
 | **Common issues**      | Race conditions, deadlocks, thread contention.            |
 | **Modern replacement** | `Task`, `async/await`, and `Parallel` APIs.               |
+
+# 🧠 Memory Management in C#
+## 📘 Overview
+**Memory management** in C# is primarily handled by the **.NET runtime (CLR – Common Language Runtime)**.<br>
+It automatically allocates and frees memory for objects through the **Garbage Collector (GC)**, reducing the risk of memory leaks and dangling pointers that are common in unmanaged languages like C or C++.
+
+## 🧩 Memory Layout in .NET
+C# divides memory mainly into two key areas:
+| Memory Area | Description                                                                                          | Example                      |
+| ----------- | ---------------------------------------------------------------------------------------------------- | ---------------------------- |
+| **Stack**   | Stores **value types**, local variables, and function call data. Managed automatically (LIFO order). | `int a = 10;`                |
+| **Heap**    | Stores **reference types** (objects, arrays, strings). Managed by the **Garbage Collector**.         | `var person = new Person();` |
+
+## ⚙️ Example
+```csharp
+class Program
+{
+    static void Main()
+    {
+        int x = 10;                // Stored on Stack
+        Person p = new Person();   // Reference (p) on Stack, Object on Heap
+        p.Name = "John";
+    }
+}
+
+class Person
+{
+    public string Name { get; set; }
+}
+
+```
+### 🧾 Explanation:
+- `x` (a value type) lives on the stack.
+- `p` (a reference type) lives on the heap, but its reference (address) is on the stack.
+
+## 🧹 Garbage Collection (GC)
+**Garbage Collection** is an **automatic memory cleanup process** that reclaims memory occupied by objects that are no longer reachable in code.
+### ✅ Key Responsibilities
+1. Frees memory of unreferenced objects.
+2. Compacts heap memory to reduce fragmentation.
+3. Optimizes memory allocation efficiency.
+
+## 🧭 GC Generations
+The .NET GC uses a generational model to optimize performance:
+| Generation | Description                                  | Frequency of Collection |
+| ---------- | -------------------------------------------- | ----------------------- |
+| **Gen 0**  | Newly created short-lived objects.           | Very frequent           |
+| **Gen 1**  | Medium-lived objects promoted from Gen 0.    | Moderate                |
+| **Gen 2**  | Long-lived objects (e.g., static or global). | Least frequent          |
+
+### 🧠 Why Generations?
+Most objects die young, so GC focuses more on short-lived objects to reduce overhead.
+
+## 🔧 Forcing Garbage Collection (Not Recommended)
+```csharp
+GC.Collect();
+GC.WaitForPendingFinalizers();
+```
+#### ⚠️ Use sparingly — forcing GC can hurt performance because the GC runs automatically when needed.
+
+## 🧱 Finalizers and IDisposable
+### 🧩 Finalizer
+A finalizer (also called a destructor) is used to perform cleanup before an object is destroyed.
+```csharp
+class MyClass
+{
+    ~MyClass()
+    {
+        Console.WriteLine("Finalizer called");
+    }
+}
+```
+#### ⚠️ You rarely need finalizers. They slow down GC because objects with finalizers require extra processing.
+
+### 🧰 IDisposable and using
+If a class holds unmanaged resources (e.g., file handles, database connections), it should implement `IDisposable`.
+```csharp
+class FileManager : IDisposable
+{
+    private FileStream file;
+
+    public FileManager(string path)
+    {
+        file = new FileStream(path, FileMode.Open);
+    }
+
+    public void Dispose()
+    {
+        file.Close(); // Clean up unmanaged resource
+        Console.WriteLine("File closed");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        using (var manager = new FileManager("data.txt"))
+        {
+            // Use file
+        } // Dispose() automatically called here
+    }
+}
+
+```
+✅ `using` statement ensures timely release of unmanaged resources.
+
+## 🧩 Managed vs Unmanaged Memory
+| Type               | Managed                     | Unmanaged                                        |
+| ------------------ | --------------------------- | ------------------------------------------------ |
+| **Handled by GC?** | ✅ Yes                       | ❌ No                                             |
+| **Examples**       | C# objects, arrays, strings | File handles, database connections, OS resources |
+| **Cleanup**        | Automatic                   | Manual (via `Dispose()` or `finally`)            |
+
+### 💡 Best Practices
+1. Avoid unnecessary object creation in loops.
+
+2. Use using for disposable resources.
+
+3. Prefer value types for lightweight data.
+
+4. Don’t force GC manually (GC.Collect()).
+
+5. Keep object references short-lived if possible.
+
+## 🧾 Summary
+| Concept               | Description                                 |
+| --------------------- | ------------------------------------------- |
+| **Memory Areas**      | Stack (value types), Heap (reference types) |
+| **Managed by**        | Common Language Runtime (CLR)               |
+| **Automatic cleanup** | Garbage Collector (GC)                      |
+| **GC Generations**    | 0 (short-lived), 1 (medium), 2 (long-lived) |
+| **Manual cleanup**    | Implement `IDisposable` and use `using`     |
+| **Unmanaged memory**  | Must be released explicitly                 |
