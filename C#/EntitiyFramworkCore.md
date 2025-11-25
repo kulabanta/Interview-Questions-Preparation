@@ -663,3 +663,301 @@ var dict = context.Employees
 | Joins                 | ✅ Yes                                              |
 | Navigation properties | EF Core translates includes                        |
 | Custom functions      | ❌ No (client-side)                                 |
+
+## Entity Framework Core – Relationships & Navigation Properties
+
+Entity Framework Core (EF Core) supports three main types of relationships between entities:
+1. One-to-One
+2. One-to-Many
+3. Many-to-Many
+
+Relationships define how tables in a database are connected.<br>
+Navigation properties allow you to navigate those relationships in C# code.
+
+### 1. What Are Relationships in EF Core?
+A relationship describes how two entities are connected using:
+- Primary Key (PK)
+- Foreign Key (FK)
+- Navigation Properties
+
+EF Core uses these relationships to:
+- Load related data
+- Enforce referential integrity
+- Generate proper database schema
+
+### 2. Navigation Properties
+Navigation properties represent related entities.<br>
+
+**Types of Navigation Properties**
+| Relationship | Navigation Property Type |
+| ------------ | ------------------------ |
+| One-to-One   | Single reference         |
+| One-to-Many  | Reference + Collection   |
+| Many-to-Many | Two collections          |
+
+### 3. Types of Relationships
+#### A. One-to-Many (Most Common)
+Example:
+- One Department has many Students
+- Student belongs to exactly one Department
+
+**Model Classes**
+```csharp
+public class Department
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+
+    public ICollection<Student> Students { get; set; } // Collection Nav
+}
+
+public class Student
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+
+    public int DepartmentId { get; set; } // Foreign Key
+    public Department Department { get; set; } // Reference Nav
+}
+
+```
+**Fluent API (Optional)**
+```csharp
+modelBuilder.Entity<Student>()
+    .HasOne(s => s.Department)
+    .WithMany(d => d.Students)
+    .HasForeignKey(s => s.DepartmentId);
+```
+#### B. One-to-One
+Example:
+- A Student has one Address
+- Address belongs to one Student
+
+**Model Classes**
+```csharp
+public class Student
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+
+    public StudentAddress Address { get; set; }
+}
+
+public class StudentAddress
+{
+    public int Id { get; set; }
+    public string AddressLine { get; set; }
+
+    public int StudentId { get; set; }
+    public Student Student { get; set; }
+}
+```
+**Fluent API**
+```csharp
+modelBuilder.Entity<Student>()
+    .HasOne(s => s.Address)
+    .WithOne(a => a.Student)
+    .HasForeignKey<StudentAddress>(a => a.StudentId);
+```
+
+#### C. Many-to-Many
+Example:
+- A Student can join many Courses
+- A Course can have many Students
+
+**Model Classes**
+```csharp
+public class Student
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+
+    public ICollection<Course> Courses { get; set; }
+}
+
+public class Course
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+
+    public ICollection<Student> Students { get; set; }
+}
+```
+**EF Core 5+ Auto Creates Join Table**
+
+No join entity class required unless you need extra fields.
+
+**Fluent API (Optional)**
+
+```csharp
+modelBuilder.Entity<Student>()
+    .HasMany(s => s.Courses)
+    .WithMany(c => c.Students)
+    .UsingEntity(j => j.ToTable("StudentCourses"));
+```
+
+### 4. Shadow Foreign Keys
+EF Core may create FK even if you don’t define it in your class.
+
+Example:
+
+If you write only:
+```csharp
+public class Student
+{
+    public Department Department { get; set; }
+}
+```
+EF Core creates a shadow FK:<br>
+`DepartmentId`
+
+### #️⃣ Loading Related Data in Entity Framework Core
+In EF Core, when you query an entity, related data is NOT loaded automatically unless you configure it.
+
+EF Core offers three ways to load related entities:
+
+1. Eager Loading
+
+2. Explicit Loading
+
+3. Lazy Loading
+
+Each method controls when and how EF Core loads navigation properties related to your entity.
+
+#### 1. Eager Loading
+**What it means**
+
+EF Core loads the main entity + related entities in a single query (or minimal number of queries) using .Include().
+
+When to use?
+1. When you need related data immediately.
+2. When you want to avoid extra database round trips.
+
+**Example**
+```csharp   
+var students = context.Students
+                      .Include(s => s.Department)
+                      .ToList();
+
+```
+**Eager Loading with Multiple Levels**
+```csharp
+var students = context.Students
+    .Include(s => s.Department)
+    .ThenInclude(d => d.Faculty)
+    .ToList();
+```
+**Eager Loading Collections**
+```csharp
+var departments = context.Departments
+    .Include(d => d.Students)
+    .ToList();
+```
+
+**Pros**
+
+✔ Fewer database calls<br>
+✔ Better when related data is needed immediately
+
+**Cons**
+
+✘ May retrieve too much data<br>
+✘ Complex includes can slow down large queries
+
+#### 2. Explicit Loading
+What it means
+
+You load the main entity first, and load related data later, only when needed.
+
+How it's done
+
+Using:
+
+1. .Reference().Load() — for single related entity
+
+2. .Collection().Load() — for collections
+
+**Example: Explicitly loading a reference**
+```csharp
+var student = context.Students.First();
+
+context.Entry(student)
+       .Reference(s => s.Department)
+       .Load();
+```
+**Explicitly loading a collection**
+```csharp
+var department = context.Departments.First();
+
+context.Entry(department)
+       .Collection(d => d.Students)
+       .Load();
+```
+**Filtered explicit load**
+```csharp
+context.Entry(department)
+    .Collection(d => d.Students)
+    .Query()
+    .Where(s => s.Name.StartsWith("A"))
+    .Load();
+```
+**Pros**
+
+✔ Only load data when required<br>
+✔ Good for performance in large datasets
+
+**Cons**
+
+✘ Multiple round-trips to the database<br>
+✘ Developer must remember to load related data
+
+#### 3. Lazy Loading
+**What it means**
+
+Related data loads automatically the moment you access the navigation property.
+
+Example:
+```csharp
+var student = context.Students.First();
+var deptName = student.Department.Name; 
+// Department gets loaded here automatically
+```
+**Requirements**
+
+To enable lazy loading:
+
+1. Install package:
+```csharp
+dotnet add package Microsoft.EntityFrameworkCore.Proxies
+```
+
+2. Enable proxies in DbContext:
+```csharp
+protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+{
+    optionsBuilder.UseLazyLoadingProxies()
+                  .UseSqlServer("connection-string");
+}
+```
+
+3. Make navigation properties virtual:
+```csharp
+public virtual Department Department { get; set; }
+```
+**Pros**<br>
+
+✔ Very easy to use<br>
+✔ Loads data automatically when accessed
+
+**Cons**<br>
+
+✘ Can create many small queries → N+1 problem<br>
+✘ Harder to debug<br>
+✘ Lower performance for large navigation graphs
+
+#### Summary Table
+| Loading Method       | How it Loads                                      | Pros                    | Cons                            |
+| -------------------- | ------------------------------------------------- | ----------------------- | ------------------------------- |
+| **Eager Loading**    | Loads related data immediately using `.Include()` | Efficient fewer queries | May load extra data             |
+| **Explicit Loading** | Load related data manually using `.Load()`        | Fine control            | More round-trips                |
+| **Lazy Loading**     | Loads data automatically when accessed            | Very convenient         | Performance issues, N+1 problem |
