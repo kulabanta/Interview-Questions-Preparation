@@ -961,3 +961,258 @@ public virtual Department Department { get; set; }
 | **Eager Loading**    | Loads related data immediately using `.Include()` | Efficient fewer queries | May load extra data             |
 | **Explicit Loading** | Load related data manually using `.Load()`        | Fine control            | More round-trips                |
 | **Lazy Loading**     | Loads data automatically when accessed            | Very convenient         | Performance issues, N+1 problem |
+
+## 📌 Deferred Execution in C#
+Deferred Execution means:
+
+- A LINQ query does NOT execute immediately when it is defined.It executes only when you iterate over it, such as using `.ToList()`, `foreach`, `.Count()`, etc.
+
+This helps improve performance until the actual data is needed.
+
+### 🧠 How Deferred Execution Works
+```csharp
+var query = context.Students.Where(s => s.Age > 18); 
+// NO SQL is executed yet
+```
+The query is just stored as an expression.
+
+Only when you materialize it:
+
+```csharp
+var result = query.ToList(); 
+// SQL query executes here
+```
+
+Triggers Execution:
+- .ToList()
+- .ToArray()
+- .First()
+- .Single()
+- .Count()
+- foreach
+
+### ✔ Advantages of Deferred Execution
+
+- **Performance optimization**<br>
+    Query is executed only when needed.
+
+- **Latest data**<br>
+    Since execution is delayed, it always fetches up-to-date records.
+
+- **Query composition**<br>
+    You can build complex queries step-by-step.
+
+### ✘ Disadvantages
+
+- Multiple enumeration may cause multiple queries (bad for performance).
+
+- Harder to debug because execution is delayed.
+
+## 📌 2. IQueryable in C#
+
+IQueryable<T> represents a LINQ query that executes on the database (remote data source).
+
+EF Core uses IQueryable to translate LINQ expressions into SQL queries.
+
+### 🧠 Key Features of IQueryable
+1️⃣ **Supports Deferred Execution**
+
+IQueryable stores the query as an expression tree until executed.
+
+2️⃣ **Translated to SQL**
+```csharp
+var query = context.Students.Where(s => s.Age > 18);
+```
+
+This LINQ expression → SQL automatically.
+
+3️⃣ **Query Composition**
+
+You can keep adding filters before execution:
+```csharp
+var query = context.Students.AsQueryable();
+
+if (name != null)
+    query = query.Where(s => s.Name == name);
+
+if (age != null)
+    query = query.Where(s => s.Age > age);
+
+var data = query.ToList(); // SQL executes here
+```
+4️⃣ **Runs on Database Server**
+
+Filtering happens at DB level → more efficient than in-memory filtering.
+
+### 📘 IQueryable vs IEnumerable
+| Feature            | `IQueryable<T>`         | `IEnumerable<T>`                  |
+| ------------------ | ----------------------- | --------------------------------- |
+| Execution          | SQL executed on DB      | Runs in memory                    |
+| Data Source        | Database                | Objects/Collections               |
+| Filtering          | Done in DB              | Done in C# (after data is loaded) |
+| Performance        | High (less data loaded) | Lower for large datasets          |
+| Deferred Execution | Yes                     | Yes (but in-memory)               |
+
+### 📌 Real Example: IQueryable with EF Core
+```csharp
+IQueryable<Student> query = context.Students
+                                  .Where(s => s.Age > 18);
+
+// Still NOT executed
+
+var finalList = query.ToList(); 
+// SQL executes here
+```
+Generated SQL might look like:
+```csharp
+SELECT * FROM Students WHERE Age > 18;
+```
+
+### 📌 Why IQueryable is Important in EF Core
+- Database-side filtering → better performance
+- Converts LINQ to SQL
+- Enables combined dynamic queries
+- Works with deferred execution
+- Avoids loading unnecessary data into memory
+
+## #️⃣ Change Tracking in Entity Framework Core
+Change Tracking is one of the most important features of EF Core.
+
+It allows EF Core to keep track of changes made to your entities so that it can generate the correct SQL commands when you call `SaveChanges()`.
+
+When you fetch data from the database using EF Core, the returned entities are tracked by the `DbContext`.
+
+EF Core remembers:
+1. Their original values
+2. Their current values
+3. Their state (Added, Modified, Deleted, Unchanged)
+
+This allows EF Core to know what has changed and what SQL operations it needs to perform.
+
+When EF Core tracks an entity, it stores it in the `Change Tracker` inside the `DbContext`.
+
+EF Core stores for each entity:
+1. Original property values
+2. Current property values
+3. Entity state
+4. Foreign key values
+5. Navigation references
+
+### 📌 Entity States in EF Core
+
+Each tracked entity has a state:
+| State         | Meaning                             |
+| ------------- | ----------------------------------- |
+| **Added**     | New entity to insert into DB        |
+| **Modified**  | Existing entity with updated values |
+| **Deleted**   | Entity marked for deletion          |
+| **Unchanged** | No changes detected                 |
+| **Detached**  | Not tracked by EF Core              |
+
+Example to view the state:
+```csharp
+var student = context.Students.First();
+var state = context.Entry(student).State;
+```
+
+### 📌 Example: Change Tracking in Action
+Step 1: Fetch an entity (now tracked)
+```csharp
+var student = context.Students.First(s => s.Id == 1);
+```
+Step 2: Modify the entity
+```csharp
+student.Name = "New Name";
+```
+Step 3: Save changes
+```csharp
+context.SaveChanges();
+```
+
+EF Core detects the modified property and generates SQL like:
+
+```sql
+UPDATE Students SET Name = 'New Name' WHERE Id = 1;
+```
+
+You didn’t have to write any SQL—EF Core figured it out automatically.
+
+## 📌 How EF Core Detects Changes
+
+EF Core has two strategies:
+
+**Strategy 1**: Snapshot Change Tracking (Default)
+
+- EF Core takes a snapshot of the entity when it’s loaded.
+When `SaveChanges()` is called, EF Core compares:
+    - The original values
+    - The current values
+
+    This tells EF Core what has changed.
+
+**Strategy 2**: Change Tracking Proxies
+
+- If you use lazy loading proxies, EF Core automatically marks properties as Modified when they change.
+
+### 📌 Tracking vs No-Tracking Queries
+**Tracking Query (Default)**
+
+- Entities are tracked by the DbContext.
+```csharp
+var students = context.Students.ToList(); // tracked
+```
+
+**No-Tracking Query (Better for reading)**
+
+- Use `.AsNoTracking()` to improve performance.
+```csharp
+var students = context.Students.AsNoTracking().ToList();
+```
+#### When to use No-Tracking?
+
+✔ Read-only data<br>
+✔ Large result sets<br>
+✔ No need to update returned entities
+
+### 📌 Manually Controlling Entity State
+Mark entity as modified
+```csharp
+context.Entry(student).State = EntityState.Modified;
+```
+Mark as added
+```csharp
+context.Entry(student).State = EntityState.Added;
+```
+Mark as deleted
+```csharp
+context.Entry(student).State = EntityState.Deleted;
+```
+Detach entity
+```csharp
+context.Entry(student).State = EntityState.Detached;
+```
+## 📌  Viewing All Tracked Entities
+```csharp
+var tracked = context.ChangeTracker.Entries();
+```
+### 📌  AutoDetectChanges
+
+EF Core automatically checks for changes.
+
+You can disable it for performance in bulk operations:
+```csharp
+context.ChangeTracker.AutoDetectChangesEnabled = false;
+```
+
+After operation:
+```csharp
+context.ChangeTracker.AutoDetectChangesEnabled = true;
+```
+### 📌 Summary
+| Feature              | Meaning                                       |
+| -------------------- | --------------------------------------------- |
+| **Change Tracking**  | Tracks entity changes for saving to DB        |
+| **Entity States**    | Added, Modified, Deleted, Unchanged, Detached |
+| **Snapshot**         | EF Core compares original vs current values   |
+| **Tracking Queries** | Default behavior—track changes                |
+| **AsNoTracking**     | Better performance for read-only data         |
