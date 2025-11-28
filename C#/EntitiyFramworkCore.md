@@ -1216,3 +1216,302 @@ context.ChangeTracker.AutoDetectChangesEnabled = true;
 | **Snapshot**         | EF Core compares original vs current values   |
 | **Tracking Queries** | Default behavior—track changes                |
 | **AsNoTracking**     | Better performance for read-only data         |
+
+## #️⃣ Repository Pattern in C#
+The **Repository Pattern** is a design pattern used to separate the data access logic from the business logic of an application.<br>
+It provides a clean abstraction over data storage so the application does not directly interact with the database.
+
+A `Repository` acts like a `middle layer between your application and the data source`.
+
+It provides:
+- A clean abstraction over CRUD operations
+- A way to decouple your business logic from EF Core or SQL
+- A consistent way to access data from different sources
+
+**✔ Benefits:**
+
+- Hides EF Core / SQL logic from upper layers
+- Promotes loose coupling and clean architecture
+- Makes unit testing easier (you can mock repositories)
+- Encourages consistent data access logic
+- Supports multiple data sources (DB, API, Files, etc.)
+
+A typical repository setup includes:
+1. `Repository Interface` → defines operations
+2. `Repository Implementation` → actual EF Core code
+3. `Unit of Work (optional)` → groups repositories & manages transactions
+
+### 1. Repository Interface
+```csharp
+public interface IGenericRepository<T> where T : class
+{
+    Task<IEnumerable<T>> GetAllAsync();
+    Task<T> GetByIdAsync(int id);
+    Task AddAsync(T entity);
+    void Update(T entity);
+    void Delete(T entity);
+}
+
+```
+### 2. Repository Implementation
+```csharp
+public class GenericRepository<T> : IGenericRepository<T> where T : class
+{
+    protected readonly AppDbContext _context;
+
+    public GenericRepository(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<IEnumerable<T>> GetAllAsync()
+    {
+        return await _context.Set<T>().ToListAsync();
+    }
+
+    public async Task<T> GetByIdAsync(int id)
+    {
+        return await _context.Set<T>().FindAsync(id);
+    }
+
+    public async Task AddAsync(T entity)
+    {
+        await _context.Set<T>().AddAsync(entity);
+    }
+
+    public void Update(T entity)
+    {
+        _context.Set<T>().Update(entity);
+    }
+
+    public void Delete(T entity)
+    {
+        _context.Set<T>().Remove(entity);
+    }
+}
+```
+### 3. Using Repository in a Service/Business Layer
+```csharp
+public class StudentService
+{
+    private readonly IGenericRepository<Student> _studentRepo;
+
+    public StudentService(IGenericRepository<Student> studentRepo)
+    {
+        _studentRepo = studentRepo;
+    }
+
+    public async Task AddStudent(Student student)
+    {
+        await _studentRepo.AddAsync(student);
+        // SaveChanges happens in UnitOfWork or DbContext
+    }
+}
+```
+**Sometimes you want repository methods for specific entities.**
+
+**Interface**
+```csharp
+public interface IStudentRepository : IGenericRepository<Student>
+{
+    Task<Student> GetStudentWithCourses(int studentId);
+}
+```
+
+**Implementation**
+```csharp
+public class StudentRepository : GenericRepository<Student>, IStudentRepository
+{
+    public StudentRepository(AppDbContext context) : base(context) { }
+
+    public async Task<Student> GetStudentWithCourses(int studentId)
+    {
+        return await _context.Students
+                             .Include(s => s.Courses)
+                             .FirstOrDefaultAsync(s => s.Id == studentId);
+    }
+}
+```
+
+**✔ Use it when:**
+
+1. You want a clean separation of concerns
+2. You want testability using mock repositories
+3. You’re using Domain-Driven Design (DDD)
+4. You have many data access operations
+
+**❌ Avoid it when:**
+1. You're directly using EF Core in small apps
+2. You add unnecessary layers (over-engineering)
+3. EF Core already behaves like a repository + unit of work
+
+### 📌 Summary Table
+| Concept                 | Meaning                               |
+| ----------------------- | ------------------------------------- |
+| **Repository Pattern**  | Abstraction over data access          |
+| **Purpose**             | Decouple business logic from DB logic |
+| **Generic Repository**  | Common CRUD operations                |
+| **Specific Repository** | Entity-specific advanced queries      |
+| **Unit of Work**        | Saves all changes in one transaction  |
+| **EF Core**             | Already has repository-like behavior  |
+
+## #️⃣ Unit of Work Pattern in C# (with EF Core)
+The **Unit of Work (UoW)** is a design pattern used to **manage transactions and coordinate changes** across multiple repositories in a consistent manner.
+
+It ensures that:
+- All `database changes are saved together`, or
+- `None are saved if something fails`.
+
+This prevents partial updates and maintains data integrity
+
+A Unit of Work:
+- Keeps track of changes to entities during a business transaction.
+- Groups multiple operations into a single transaction.
+- Ensures all repositories involved use the same `DbContext`.
+- Commits all changes by calling one method → `SaveChanges()`.
+
+**✔ Benefits:**
+- Single Transaction for multiple repository actions.
+- Avoids inconsistent data (partial updates).
+- Centralized place to manage:
+    - Saving changes
+    - Transaction handling
+    - Repository access
+- Reduces database calls.
+- Clean architecture and better testability.
+
+EF Core inherently implements Unit of Work through its DbContext.
+
+`DbContext` internally:
+- Tracks changes (Change Tracker)
+- Performs transactions
+- Saves changes in one call (`SaveChanges()`)
+
+However, many projects wrap UoW around DbContext for:
+- Separation of concerns
+- Better testing
+- Cleaner architecture
+
+It usually contains:
+1. Repositories
+2. `Save` or `Commit` method
+3. Optional `BeginTransaction` / `Rollback`
+
+### ✔ Example Implementation (Clean & Simple)
+#### 1. Repository Interfaces
+```csharp
+public interface IGenericRepository<T> where T : class
+{
+    Task<IEnumerable<T>> GetAll();
+    Task<T> GetById(int id);
+    Task Add(T entity);
+    void Update(T entity);
+    void Delete(T entity);
+}
+```
+#### 2. Repository Implementation
+```csharp
+public class GenericRepository<T> : IGenericRepository<T> where T : class
+{
+    protected readonly AppDbContext _context;
+    
+    public GenericRepository(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<IEnumerable<T>> GetAll() =>
+        await _context.Set<T>().ToListAsync();
+
+    public async Task<T> GetById(int id) =>
+        await _context.Set<T>().FindAsync(id);
+
+    public async Task Add(T entity) =>
+        await _context.Set<T>().AddAsync(entity);
+
+    public void Update(T entity) =>
+        _context.Set<T>().Update(entity);
+
+    public void Delete(T entity) =>
+        _context.Set<T>().Remove(entity);
+}
+```
+#### 3. Unit of Work Interface
+```csharp
+public interface IUnitOfWork : IDisposable
+{
+    IGenericRepository<Student> Students { get; }
+    IGenericRepository<Course> Courses { get; }
+
+    Task<int> CompleteAsync();
+}
+```
+#### 4. Unit of Work Implementation
+```csharp
+public class UnitOfWork : IUnitOfWork
+{
+    private readonly AppDbContext _context;
+
+    public IGenericRepository<Student> Students { get; }
+    public IGenericRepository<Course> Courses { get; }
+
+    public UnitOfWork(AppDbContext context)
+    {
+        _context = context;
+        Students = new GenericRepository<Student>(_context);
+        Courses = new GenericRepository<Course>(_context);
+    }
+
+    public async Task<int> CompleteAsync()
+    {
+        return await _context.SaveChangesAsync();
+    }
+
+    public void Dispose()
+    {
+        _context.Dispose();
+    }
+}
+```
+### 📌 5. How to Use UoW in Service Layer
+```csharp
+public class StudentService
+{
+    private readonly IUnitOfWork _unitOfWork;
+
+    public StudentService(IUnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task RegisterStudent(Student student, Course course)
+    {
+        await _unitOfWork.Students.Add(student);
+        await _unitOfWork.Courses.Add(course);
+
+        // All DB changes saved as one transaction
+        await _unitOfWork.CompleteAsync();
+    }
+}
+```
+If the DB save fails, `neither student nor course is added` → Atomic Transaction.
+
+### 📌 6. When to Use Unit of Work
+**✔ Best suited for:**
+1. Multiple database operations in a single business transaction
+2. Domain-driven design (DDD)
+3. Large enterprise applications
+4. When using repository pattern
+
+**❌ Not needed when:**
+1. Project is small or simple
+2. Only EF Core is used directly (because EF Core already does UoW internally)
+
+### 📌 Summary Table
+| Concept          | Meaning                                          |
+| ---------------- | ------------------------------------------------ |
+| **Unit of Work** | Coordinates changes across multiple repositories |
+| **Purpose**      | Ensures all operations succeed or fail together  |
+| **Where used**   | Service layer / business logic                   |
+| **Key Method**   | `CompleteAsync()` → calls `SaveChanges()`        |
+| **EF Core**      | Already has UoW inside DbContext                 |
