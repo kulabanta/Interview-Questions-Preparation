@@ -3434,6 +3434,176 @@ class Counter
 | **Common issues**      | Race conditions, deadlocks, thread contention.            |
 | **Modern replacement** | `Task`, `async/await`, and `Parallel` APIs.               |
 
+# CancellationToken in C#
+
+## 1. What is a CancellationToken?
+`CancellationToken` is a mechanism in .NET used to **cooperatively cancel** long-running or asynchronous operations such as:
+- `Task`
+- `async/await` methods
+- Parallel operations (`Parallel.ForEach`)
+- I/O operations (HTTP calls, file operations, etc.)
+
+> Cancellation in .NET is **cooperative**, not forced.  
+> The running operation must **check the token** and stop itself gracefully.
+
+---
+
+## 2. Why do we need CancellationToken?
+Without cancellation:
+- Long-running tasks may waste CPU and memory
+- Applications may become unresponsive
+- Resources may not be released properly
+
+With `CancellationToken`:
+- You can stop work early
+- You can clean up resources
+- You can respond quickly to user actions (Cancel button, timeout, shutdown)
+
+---
+
+## 3. Core Components
+
+### 3.1 CancellationTokenSource
+- **Creates and controls** the cancellation request
+- Used to signal cancellation
+
+```csharp
+var cts = new CancellationTokenSource();
+```
+### 3.2 CancellationToken
+
+Passed to tasks or methods
+
+Used by running code to observe cancellation
+```csharp
+CancellationToken token = cts.Token;
+```
+## 4. Basic Cancellation Flow
+```csharp
+var cts = new CancellationTokenSource();
+
+Task task = Task.Run(() =>
+{
+    while (!cts.Token.IsCancellationRequested)
+    {
+        Console.WriteLine("Working...");
+        Thread.Sleep(500);
+    }
+});
+
+Thread.Sleep(2000);
+cts.Cancel(); // Request cancellation
+```
+✔ Cancellation is requested<br>
+✔ Task checks the token and stops itself
+
+## 5. Using CancellationToken with async/await
+```csharp
+async Task DoWorkAsync(CancellationToken token)
+{
+    for (int i = 0; i < 10; i++)
+    {
+        token.ThrowIfCancellationRequested();
+        await Task.Delay(500, token);
+        Console.WriteLine($"Step {i}");
+    }
+}
+```
+## 6. How to Check for Cancellation
+### 6.1 Using IsCancellationRequested
+```csharp
+if (token.IsCancellationRequested)
+{
+    return;
+}
+```
+### 6.2 Using ThrowIfCancellationRequested (Recommended)
+```csharp
+token.ThrowIfCancellationRequested();
+```
+✔ Throws OperationCanceledException<br>
+✔ Clean and standard approach
+
+## 7. Handling Cancellation Exception
+```csharp
+try
+{
+    await DoWorkAsync(cts.Token);
+}
+catch (OperationCanceledException)
+{
+    Console.WriteLine("Operation was cancelled.");
+}
+```
+## 8. CancellationToken with Task.Run
+```csharp
+var cts = new CancellationTokenSource();
+
+Task task = Task.Run(() =>
+{
+    cts.Token.ThrowIfCancellationRequested();
+    // Work here
+}, cts.Token);
+```
+## 9. CancellationToken with Task.WhenAll
+```csharp
+var cts = new CancellationTokenSource();
+
+var tasks = items.Select(item =>
+    Task.Run(() => Process(item, cts.Token), cts.Token)
+);
+
+try
+{
+    await Task.WhenAll(tasks);
+}
+catch (OperationCanceledException)
+{
+    Console.WriteLine("One or more tasks were cancelled.");
+}
+```
+## 10. CancellationToken with Parallel.ForEach
+```csharp
+var cts = new CancellationTokenSource();
+
+try
+{
+    Parallel.ForEach(
+        items,
+        new ParallelOptions
+        {
+            CancellationToken = cts.Token,
+            MaxDegreeOfParallelism = 4
+        },
+        item =>
+        {
+            // Work
+            cts.Token.ThrowIfCancellationRequested();
+        });
+}
+catch (OperationCanceledException)
+{
+    Console.WriteLine("Parallel execution cancelled.");
+}
+```
+## 11. Timeout-based Cancellation
+```csharp
+var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+await DoWorkAsync(cts.Token);
+```
+✔ Automatically cancels after 5 seconds
+
+## 12. Linked Cancellation Tokens
+Used when **multiple cancellation sources** should cancel the same operation.
+```csharp
+var cts1 = new CancellationTokenSource();
+var cts2 = new CancellationTokenSource();
+
+var linkedCts = CancellationTokenSource
+    .CreateLinkedTokenSource(cts1.Token, cts2.Token);
+```
+If any source cancels → linked token cancels
 # 🧠 Memory Management in C#
 ## 📘 Overview
 **Memory management** in C# is primarily handled by the **.NET runtime (CLR – Common Language Runtime)**.<br>
