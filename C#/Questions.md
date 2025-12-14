@@ -2025,6 +2025,111 @@ Task was cancelled.
 ✅ “A Task in C# represents an asynchronous operation.
 It’s a higher-level abstraction built on top of threads, offering better performance, exception handling, and async support.”
 
+
+# ValueTask in C#
+
+## 1. What is ValueTask?
+`ValueTask` and `ValueTask<T>` are lightweight alternatives to `Task` and `Task<T>`  
+introduced to **reduce memory allocations** in high-performance and hot-path code.
+
+They are most useful when an async method:
+- **Often completes synchronously**, and
+- **Only sometimes needs to be truly asynchronous**
+
+> Think of `ValueTask` as:  
+> **“A result that *might* already be available, or *might* come later.”**
+
+---
+
+## 2. Why ValueTask Exists
+
+### Problem with `Task`
+Every `async` method that returns `Task`:
+- Allocates a `Task` object on the heap
+- Even if the result is already available
+
+In high-throughput systems, these allocations:
+- Increase GC pressure
+- Reduce performance
+
+### Solution
+`ValueTask`:
+- Avoids allocation **when the result is already available**
+- Falls back to `Task` only when needed
+
+---
+
+## 3. Basic Syntax
+
+```csharp
+ValueTask<int> GetNumberAsync()
+{
+    return new ValueTask<int>(42); // completed synchronously
+}
+
+ValueTask<int> GetFromCacheAsync()
+{
+    if (cache.TryGet(out var value))
+        return new ValueTask<int>(value);
+
+    return new ValueTask<int>(FetchFromDbAsync());
+}
+
+```
+## 4. ValueTask vs Task
+| Feature         | Task             | ValueTask            |
+| --------------- | ---------------- | -------------------- |
+| Allocation      | Always allocates | May avoid allocation |
+| Awaitable       | Yes              | Yes                  |
+| Multiple awaits | ✅ Allowed        | ❌ Not allowed        |
+| Can be cached   | Yes              | ❌ Dangerous          |
+| Complexity      | Simple           | Advanced             |
+| Use case        | General async    | Performance-critical |
+
+## 5. How ValueTask Works (Conceptually)
+ValueTask<T> internally stores:
+- The result (if completed synchronously), or
+- A reference to a Task<T>
+```
+ValueTask<T>
+ ├─ Result (no allocation)
+ └─ Task<T> (fallback)
+```
+
+## 6. Correct Usage (Very Important)
+### 6.1 Await Only Once ✅
+```csharp
+await GetValueAsync(); // OK
+```
+❌ Incorrect:
+
+```csharp
+var vt = GetValueAsync();
+await vt;
+await vt; // ❌ Undefined behavior
+```
+
+### 6.2 Do NOT Store ValueTask ❌
+```csharp
+private ValueTask<int> _cached; // ❌
+```
+ValueTask is not reusable.
+
+### ValueTask is not reusable.
+```csharp
+Task<int> task = GetValueAsync().AsTask();
+```
+Use this when:
+- You must await multiple times
+- You need to pass it to APIs expecting Task
+
+## 9. ValueTask vs Task.CompletedTask
+| Scenario                    | Best Choice          |
+| --------------------------- | -------------------- |
+| Always completes sync       | `Task.CompletedTask` |
+| Often sync, sometimes async | `ValueTask`          |
+| Always async                | `Task`               |
+
 # ⚙️19. Thread in C#
 ## 🧩 Definition
 
@@ -2871,7 +2976,7 @@ class Program
     {
         try
         {
-            await Task.WhenAll(Task1(), Task2(), Task3());
+            Task.WhenAll(Task1(), Task2(), Task3()).Wait();
         }
         catch (Exception ex)
         {
@@ -2912,21 +3017,41 @@ Main catch: AggregateException
  - Inner exception: Task3 failed.
 **/
 ```
-### 🧩 Why AggregateException?
-When working with asynchronous operations:
+When you `await Task.WhenAll(...)`, **exceptions are unwrapped** and you usually get:
+- a **single exception**, or
+- the **first exception**
 
-1. Multiple tasks can fail independently and concurrently.
+`AggregateException` is thrown **only when you block synchronously**.
+#### Behavior Difference (Most Important Point)
 
-2. It’s not possible to represent multiple errors with a single exception type.
+| How you call `Task.WhenAll` | Exception thrown |
+|----------------------------|------------------|
+| `await Task.WhenAll(...)` | ❌ No AggregateException |
+| `Task.WhenAll(...).Wait()` | ✅ AggregateException |
+| `Task.WhenAll(...).Result` | ✅ AggregateException |
+```csharp
+var tasks = new[]
+{
+    Task.Run(() => throw new InvalidOperationException("Error 1")),
+    Task.Run(() => throw new ArgumentException("Error 2"))
+};
 
-3. Therefore, .NET wraps them into an AggregateException, which acts as a container for all the thrown exceptions.
-
+try
+{
+    await Task.WhenAll(tasks);
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex.GetType().Name);
+    Console.WriteLine(ex.Message);
+}
+```
 ### 🔍 Handling Individual Exceptions
 You can handle individual exceptions like this:
 ```csharp
 try
 {
-    await Task.WhenAll(Task1(), Task2());
+    Task.WhenAll(Task1(), Task2()).Wait();
 }
 catch (Exception ex)
 {
@@ -2943,7 +3068,21 @@ catch (Exception ex)
         });
     }
 }
+/** output
+InvalidOperationException
+Error 1
+**/
 ```
+
+### 🧩 Why AggregateException?
+When working with asynchronous operations:
+
+1. Multiple tasks can fail independently and concurrently.
+
+2. It’s not possible to represent multiple errors with a single exception type.
+
+3. Therefore, .NET wraps them into an AggregateException, which acts as a container for all the thrown exceptions.
+
 💡 AggregateException.Handle() allows you to filter and selectively handle specific exception types.
 
 ### ⚠️ Important Notes
@@ -3315,6 +3454,72 @@ await Parallel.ForEachAsync(urls, options, async (url, token) =>
     Console.WriteLine($"Processed with limit: {url}");
 });
 ```
+### Exception Handling in Parallel.Foreach and Parallel.ForEachAsync
+
+`Parallel.ForEachAsync` is **async-first**.  
+When you `await` it, **exceptions are unwrapped**, so you usually see **one exception**, not an `AggregateException`.
+
+This is the same behavior as:
+- `await Task.WhenAll(...)`
+- `await any async method`
+
+| API | Exception Behavior |
+|----|-------------------|
+| `Parallel.ForEach` (sync) | ✅ `AggregateException` |
+| `Parallel.ForEachAsync` + `await` | ❌ Single exception |
+
+#### Example: Single Exception Observed
+```csharp
+try
+{
+    await Parallel.ForEachAsync(items, async (item, ct) =>
+    {
+        if (item == 3)
+            throw new InvalidOperationException("Boom");
+
+        await Task.Delay(100, ct);
+    });
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex.GetType().Name);
+    Console.WriteLine(ex.Message);
+}
+```
+Are Other Exceptions Lost? ❌ No
+They are **stored inside the returned Task**.
+```csharp
+Task task = Parallel.ForEachAsync(items, async (item, ct) =>
+{
+    if (item % 2 == 0)
+        throw new Exception($"Fail {item}");
+});
+
+try
+{
+    await task;
+}
+catch
+{
+    foreach (var ex in task.Exception.InnerExceptions)
+    {
+        Console.WriteLine(ex.Message);
+    }
+}
+```
+✔ All exceptions are preserved<br>
+✔ Just not thrown directly
+## Why .NET Chose This Design
+### Async Philosophy
+- throw can only throw one exception
+- Async code should read like sync code
+- AggregateException breaks that illusion
+### Fail-Fast Execution
+- `Parallel.ForEachAsync` stops scheduling new work
+- First exception triggers cancellation
+- Remaining iterations may never start
+
+So in many cases, there aren’t multiple exceptions to aggregate
 ## 🧾 Summary - Parallel.ForEachAsync
 | Concept             | Description                                |
 | ------------------- | ------------------------------------------ |
