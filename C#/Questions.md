@@ -3942,3 +3942,99 @@ class Program
 | **GC Generations**    | 0 (short-lived), 1 (medium), 2 (long-lived) |
 | **Manual cleanup**    | Implement `IDisposable` and use `using`     |
 | **Unmanaged memory**  | Must be released explicitly                 |
+
+# CSV reader and writer in C#
+- Recommended Library: **CsvHelper**
+  - ✔ Most popular
+  - ✔ Actively maintained
+  - ✔ Strong typing & mapping support
+
+## 🔹 Basic Setup
+```csharp
+using CsvHelper;
+using CsvHelper.Configuration;
+using System.Globalization;
+```
+
+## 🔹 Step 1: Create a Model (POCO)
+```csharp
+public class User
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+}
+```
+
+## 🔹 Step 2: Reading a CSV File
+```csharp
+using var reader = new StreamReader("users.csv");
+using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+
+var records = csv.GetRecords<User>().ToList();
+```
+- ✔ Automatically maps columns to properties
+- ✔ Column names must match property names
+
+## 📥 Read CSV Line by Line (Large Files)
+```csharp
+using var reader = new StreamReader("users.csv");
+using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+
+while (csv.Read())
+{
+    var id = csv.GetField<int>("Id");
+    var name = csv.GetField<string>("Name");
+    var email = csv.GetField<string>("Email");
+}
+```
+
+## 🔹 Step 3: Writing Data to a CSV File
+```csharp
+var users = new List<User>
+{
+    new User { Id = 1, Name = "John", Email = "john@test.com" },
+    new User { Id = 2, Name = "Alice", Email = "alice@test.com" }
+};
+
+using var writer = new StreamWriter("output.csv");
+using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+
+csv.WriteRecords(users);
+```
+
+- ✔ Automatically writes header row
+- ✔ Creates file if it doesn’t exist
+
+## 🔹 Step 4: Custom Column Mapping (Best Practice)
+- Create a Class Map
+```csharp
+public class UserMap : ClassMap<User>
+{
+    public UserMap()
+    {
+        Map(m => m.Id).Name("UserId");
+        Map(m => m.Name).Name("FullName");
+        Map(m => m.Email).Name("EmailAddress");
+    }
+}
+```
+- Use the Map
+```csharp
+using var reader = new StreamReader("users.csv");
+using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+
+csv.Context.RegisterClassMap<UserMap>();
+var users = csv.GetRecords<User>().ToList();
+```
+
+## 🔹 Async Read (Recommended for APIs)
+```csharp
+using var reader = new StreamReader("users.csv");
+using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+
+await foreach (var record in csv.GetRecordsAsync<User>())
+{
+    // process record
+}
+```
