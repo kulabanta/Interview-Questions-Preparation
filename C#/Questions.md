@@ -7,12 +7,14 @@ In C#, types are divided into **value types** and **reference types** based on h
 ## 🧩 1. Definition
 
 ### ✅ Value Types
+
 - Store the **actual data** directly.
 - Each variable **has its own copy** of the data.
 - Typically stored in the **stack** memory.
 - Faster access but limited in flexibility.
 
 ### ✅ Reference Types
+
 - Store a **reference (memory address)** to the actual data.
 - Multiple variables can **point to the same object**.
 - The actual data is stored in the **heap** memory.
@@ -22,9 +24,9 @@ In C#, types are divided into **value types** and **reference types** based on h
 
 ## 🧠 2. Examples
 
-| Type Category | Examples |
-|----------------|-----------|
-| **Value Types** | `int`, `float`, `bool`, `char`, `struct`, `enum` |
+| Type Category       | Examples                                                      |
+| ------------------- | ------------------------------------------------------------- |
+| **Value Types**     | `int`, `float`, `bool`, `char`, `struct`, `enum`              |
 | **Reference Types** | `string`, `class`, `interface`, `array`, `delegate`, `object` |
 
 ---
@@ -41,9 +43,11 @@ y = 20;
 Console.WriteLine(x); // Output: 10
 Console.WriteLine(y); // Output: 20
 ```
+
 ## ⚙️ 3. Code Example
 
 ### 🔹 reference Type Example
+
 ```csharp
 class Person
 {
@@ -68,14 +72,13 @@ Console.WriteLine(p2.Name); // Output: Bob
 | **Performance**       | Faster                           | Slightly slower            |
 | **Examples**          | `int`, `bool`, `struct`          | `class`, `string`, `array` |
 
-
 ### Notes
-* `string` is a reference type, but it behaves like a value type because it is immutable (cannot be modified once created).
 
-* Structs are value types, even though they can contain fields of reference types.
+- `string` is a reference type, but it behaves like a value type because it is immutable (cannot be modified once created).
 
-* Boxing and unboxing occurs when converting between value types and reference types.
+- Structs are value types, even though they can contain fields of reference types.
 
+- Boxing and unboxing occurs when converting between value types and reference types.
 
 # 2. Difference Between Boxing and Unboxing in C#
 
@@ -87,6 +90,7 @@ They are essential concepts for understanding how the **.NET runtime (CLR)** han
 ## 🧩 1. Definition
 
 ### ✅ Boxing
+
 - **Boxing** is the process of **converting a value type** (like `int`, `bool`, `struct`) **into an object (reference type)**.
 - The value is **copied from the stack** to the **heap**.
 - This allows value types to be treated as objects.
@@ -106,7 +110,9 @@ object obj = num; // Boxing
 object obj = 10;
 int num = (int)obj; // Unboxing
 ```
+
 ### ⚙️ 2. Visual Representation
+
 | Memory Area | Operation     | Description                                                       |
 | ----------- | ------------- | ----------------------------------------------------------------- |
 | 🧠 Stack    | Before Boxing | Holds the actual value of the value type                          |
@@ -125,6 +131,7 @@ int num = (int)obj; // Unboxing
 | **Memory Allocation** | Creates a new object on the heap     | Extracts value from the heap         |
 
 ### 🚀 4. Performance Impact
+
 - Boxing and unboxing are computationally expensive operations.
 - Avoid excessive boxing/unboxing in performance-critical code (e.g., loops, collections).
 - Use generics (e.g., List<int>) instead of non-generic collections (ArrayList) to prevent implicit boxing.
@@ -136,9 +143,11 @@ In C#, classes are the **blueprints** for creating objects. The language provide
 ---
 
 ## 1. **Concrete Class**
+
 A **concrete class** is the most common type of class that can be **instantiated** to create objects.
 
 ### ✅ Example:
+
 ```csharp
 public class Car
 {
@@ -152,7 +161,9 @@ public class Car
 Car car = new Car();
 car.StartEngine();
 ```
+
 ### 💡 Key Points:
+
 - Can be instantiated directly.
 - Can contain fields, methods, and properties.
 - Does not need to be inherited.
@@ -162,6 +173,7 @@ car.StartEngine();
 An **abstract class** provides a base definition for other classes and cannot be instantiated directly.
 
 ### ✅ Example:
+
 ```csharp
 public abstract class Shape
 {
@@ -174,15 +186,19 @@ public class Circle : Shape
     public override double CalculateArea() => Math.PI * Radius * Radius;
 }
 ```
+
 ### 💡Keypoints
+
 - Use the abstract keyword.
 - May contain abstract and non-abstract members.
 - Must be inherited to be used.
 
 ## 3. Sealed Class
+
 A **sealed class** cannot be inherited by any other class.
 
 ### ✅ Example:
+
 ```csharp
 public sealed class Logger
 {
@@ -192,15 +208,19 @@ public sealed class Logger
     }
 }
 ```
+
 ### 💡Keypoints
+
 - Use the `sealed` keyword.
 - Improves performance by preventing inheritance hierarchy.
 - Often used for security or utility classes.
 
 ## 4. Static Class
+
 A **static class** contains only **static members** and **cannot be instantiated or inherited**.
 
 ### ✅ Example:
+
 ```csharp
 public static class MathHelper
 {
@@ -208,16 +228,21 @@ public static class MathHelper
 }
 
 ```
+
 ### 💡Keypoints
+
 - Use the static keyword.
 - Members are accessed using the class name.
 - Commonly used for utility or helper methods.
 
 ## 5. Partial Class
+
 A partial class allows its definition to be split across multiple files.
 
 ### ✅ Example:
+
 #### file1.cs
+
 ```csharp
 public partial class Employee
 {
@@ -225,7 +250,9 @@ public partial class Employee
 }
 
 ```
+
 #### file2.cs
+
 ```csharp
 public partial class Employee
 {
@@ -234,15 +261,19 @@ public partial class Employee
 
 
 ```
+
 ### 💡Keypoints
+
 - Use the `partial` keyword.
 - All parts must use the same `access modifier` and `namespace`.
 - Useful for large projects or auto-generated code (e.g., in ASP.NET).
 
 ## 6. Nested Class
+
 A nested class is declared inside another class and is used when the inner class is only relevant to the outer class.
 
 ### ✅ Example:
+
 ```csharp
 public class Outer
 {
@@ -252,20 +283,23 @@ public class Outer
     }
 }
 ```
+
 ### 💡Keypoints
+
 - Can be private, protected, or public.
 - Accessed using `Outer.Inner` syntax.
 - Used to logically group related functionality.
 
 ## 🧠 Summary Table
+
 | Class Type | Can Instantiate | Can Inherit | Contains Static Members | Use Case                 |
 | ---------- | --------------- | ----------- | ----------------------- | ------------------------ |
-| Concrete   | ✅ Yes           | ✅ Yes       | ✅                       | Regular objects          |
-| Abstract   | ❌ No            | ✅ Yes       | ✅                       | Base for derived classes |
-| Sealed     | ✅ Yes           | ❌ No        | ✅                       | Prevent inheritance      |
-| Static     | ❌ No            | ❌ No        | ✅ Only static           | Utility functions        |
-| Partial    | ✅ Yes           | ✅ Yes       | ✅                       | Split class definition   |
-| Nested     | ✅ Yes           | ✅ Yes       | ✅                       | Group related logic      |
+| Concrete   | ✅ Yes          | ✅ Yes      | ✅                      | Regular objects          |
+| Abstract   | ❌ No           | ✅ Yes      | ✅                      | Base for derived classes |
+| Sealed     | ✅ Yes          | ❌ No       | ✅                      | Prevent inheritance      |
+| Static     | ❌ No           | ❌ No       | ✅ Only static          | Utility functions        |
+| Partial    | ✅ Yes          | ✅ Yes      | ✅                      | Split class definition   |
+| Nested     | ✅ Yes          | ✅ Yes      | ✅                      | Group related logic      |
 
 # 🧭 4. Namespace in C#
 
@@ -279,6 +313,7 @@ It helps avoid **naming conflicts** and makes the code **more maintainable and r
 A **namespace** acts as a **container** for types and defines a **scope** that helps organize large codebases logically.
 
 ### ✅ Syntax:
+
 ```csharp
 namespace MyApplication.Models
 {
@@ -295,15 +330,12 @@ namespace MyApplication.Models
    - Two classes with the same name can exist in different namespaces.
 
 2. **Improves code organization**
-
    - Groups related functionalities together.
 
 3. **Enhances readability**
-
    - Makes it easier to locate and maintain code.
 
 4. **Supports modular programming**
-
    - Encourages logical separation of components.
 
 ## 📦 Accessing Namespaces
@@ -325,6 +357,7 @@ namespace MyApplication.Services
     }
 }
 ```
+
 ## 🌳 Nested Namespaces
 
 Namespaces can be nested to represent hierarchical structures.
@@ -357,7 +390,9 @@ using ProjModels = ProjectA.Models;
 ProjModels.Employee emp = new ProjModels.Employee();
 
 ```
+
 ## 🧠 Summary
+
 | Concept        | Description                                    |
 | -------------- | ---------------------------------------------- |
 | **Definition** | Logical grouping of related types.             |
@@ -379,6 +414,7 @@ An **abstract class** is a **base class** that cannot be instantiated.
 It may contain both **abstract members** (no implementation) and **concrete members** (with implementation).
 
 ### ✅ Example
+
 ```csharp
 public abstract class Shape
 {
@@ -396,6 +432,7 @@ public class Circle : Shape
     public override double CalculateArea() => Math.PI * Radius * Radius;
 }
 ```
+
 ## 💡 Key Points
 
 - Declared using the abstract keyword.
@@ -423,6 +460,7 @@ public class Rectangle : IShape
 }
 
 ```
+
 ## 💡 Key Points
 
 - Declared using the interface keyword.
@@ -430,6 +468,7 @@ public class Rectangle : IShape
 - All members are public by default.
 - A class can implement multiple interfaces.
 - From C# 8.0 onwards, interfaces can have default implementations.
+
 ## ⚖️ Key Differences
 
 | Feature                  | Abstract Class                                | Interface                                        |
@@ -444,15 +483,16 @@ public class Rectangle : IShape
 | **Versioning**           | Harder to extend                              | Easier (with default implementations)            |
 
 ## 🧠 Summary Table
+
 | Concept                    | Abstract Class                | Interface                                         |
 | -------------------------- | ----------------------------- | ------------------------------------------------- |
-| **Instantiation**          | ❌ Not possible                | ❌ Not possible                                    |
-| **Implementation Sharing** | ✅ Yes                         | ❌ No (except default methods)                     |
-| **Fields/State**           | ✅ Allowed                     | ❌ Not allowed                                     |
+| **Instantiation**          | ❌ Not possible               | ❌ Not possible                                   |
+| **Implementation Sharing** | ✅ Yes                        | ❌ No (except default methods)                    |
+| **Fields/State**           | ✅ Allowed                    | ❌ Not allowed                                    |
 | **Inheritance**            | Single                        | Multiple                                          |
 | **Use When**               | You need shared code or state | You need a common contract across unrelated types |
 
-# ⚙️6.  Difference Between `const` and `readonly` in C#
+# ⚙️6. Difference Between `const` and `readonly` in C#
 
 In C#, both **`const`** and **`readonly`** are used to declare **immutable (unchangeable)** fields,  
 but they differ in **when and how** their values are assigned and stored.
@@ -464,12 +504,14 @@ but they differ in **when and how** their values are assigned and stored.
 A **`const` (constant)** field is a **compile-time constant**, meaning its value must be **known and assigned at compile time**.
 
 ### ✅ Example
+
 ```csharp
 public class MathConstants
 {
     public const double Pi = 3.14159;
 }
 ```
+
 ## 💡 Key Points
 
 - Must be initialized at the time of declaration.
@@ -483,6 +525,7 @@ public class MathConstants
 - Cannot be assigned dynamically (e.g., inside constructors).
 
 ## ⚠️ Limitation Example
+
 ```csharp
 public class Example
 {
@@ -501,6 +544,7 @@ A readonly field’s value is assigned at `runtime`, either:
 2. Inside a constructor.
 
 ## ✅ Example
+
 ```csharp
 public class Circle
 {
@@ -525,6 +569,7 @@ public class Circle
 - Useful for values that vary per instance but should remain immutable after initialization.
 
 ## ⚖️ Key Differences Between const and readonly
+
 | Feature                 | `const`                                           | `readonly`                                       |
 | ----------------------- | ------------------------------------------------- | ------------------------------------------------ |
 | **Initialization Time** | Compile time                                      | Runtime (in constructor or declaration)          |
@@ -537,6 +582,7 @@ public class Circle
 | **Example Use Case**    | Mathematical constants (`Pi`, `DaysInWeek`)       | Configuration values determined at runtime       |
 
 ## 🧩 Example Comparison
+
 ```csharp
 public class Example
 {
@@ -555,15 +601,17 @@ Console.WriteLine(Example.ConstValue);           // Output: 100
 Console.WriteLine(obj.ReadonlyValue);            // Output: 500
 
 ```
+
 ## 🧠 Summary
-| Concept                       | `const`         | `readonly`               |
-| ----------------------------- | --------------- | ------------------------ |
-| **When assigned?**            | Compile time    | Runtime                  |
-| **Can be changed later?**     | ❌ No            | ❌ No (after constructor) |
-| **Can use constructor?**      | ❌ No            | ✅ Yes                    |
-| **Implicitly static?**        | ✅ Yes           | ❌ No                     |
-| **Supports reference types?** | ❌ No            | ✅ Yes                    |
-| **Best For**                  | Fixed constants | Immutable runtime values |
+
+| Concept                       | `const`         | `readonly`                |
+| ----------------------------- | --------------- | ------------------------- |
+| **When assigned?**            | Compile time    | Runtime                   |
+| **Can be changed later?**     | ❌ No           | ❌ No (after constructor) |
+| **Can use constructor?**      | ❌ No           | ✅ Yes                    |
+| **Implicitly static?**        | ✅ Yes          | ❌ No                     |
+| **Supports reference types?** | ❌ No           | ✅ Yes                    |
+| **Best For**                  | Fixed constants | Immutable runtime values  |
 
 # 🔄 7. Difference Between `ref`, `out`, and `in` Parameters in C#
 
@@ -577,6 +625,7 @@ This means the called method can access and, in some cases, modify the original 
 The **`ref`** keyword is used to **pass an argument by reference**, allowing both the **caller and the callee** to modify the value.
 
 ### ✅ Example
+
 ```csharp
 public void Increment(ref int number)
 {
@@ -587,6 +636,7 @@ int value = 5;
 Increment(ref value);
 Console.WriteLine(value); // Output: 6
 ```
+
 ## 💡 Key Points
 
 - The variable must be initialized before being passed.
@@ -600,6 +650,7 @@ The `out` keyword is used to return multiple values from a method.
 The called method must assign a value to an `out` parameter before returning.
 
 ### ✅ Example
+
 ```csharp
 public void GetValues(out int x, out int y)
 {
@@ -612,6 +663,7 @@ GetValues(out a, out b);
 Console.WriteLine($"a = {a}, b = {b}"); // Output: a = 10, b = 20
 
 ```
+
 ## 💡 Key Points
 
 - The variable does not need to be initialized before being passed.
@@ -626,6 +678,7 @@ The `in` keyword (introduced in C# 7.2) is used to pass arguments by reference,
 but the method cannot modify the value — it’s `read-only`.
 
 ### ✅ Example
+
 ```csharp
 public void Display(in int number)
 {
@@ -637,6 +690,7 @@ int value = 50;
 Display(in value);
 
 ```
+
 ### 💡 Key Points
 
 - The variable must be initialized before being passed.
@@ -648,12 +702,13 @@ Display(in value);
 - Improves performance for large value types (like struct).
 
 ## ⚖️ Comparison Table
+
 | Feature                        | `ref`                   | `out`                  | `in`                               |
 | ------------------------------ | ----------------------- | ---------------------- | ---------------------------------- |
-| **Initialization Before Call** | ✅ Required              | ❌ Not required         | ✅ Required                         |
-| **Must Assign in Method**      | ❌ No                    | ✅ Yes                  | ❌ No                               |
-| **Can Modify Inside Method**   | ✅ Yes                   | ✅ Yes                  | ❌ No                               |
-| **Pass by Reference**          | ✅ Yes                   | ✅ Yes                  | ✅ Yes                              |
+| **Initialization Before Call** | ✅ Required             | ❌ Not required        | ✅ Required                        |
+| **Must Assign in Method**      | ❌ No                   | ✅ Yes                 | ❌ No                              |
+| **Can Modify Inside Method**   | ✅ Yes                  | ✅ Yes                 | ❌ No                              |
+| **Pass by Reference**          | ✅ Yes                  | ✅ Yes                 | ✅ Yes                             |
 | **Primary Use**                | Modify and return value | Return multiple values | Read-only performance optimization |
 | **Introduced In**              | C# 1.0                  | C# 1.0                 | C# 7.2                             |
 
@@ -665,27 +720,30 @@ Both `var` and `dynamic` are used to declare variables without explicitly specif
 However, they differ in how and when the type is determined.
 
 ## 🧠 Key Difference
+
 | Feature                     | `var`                                                            | `dynamic`                                                                        |
 | --------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | **Type Resolution**         | Compile-time (statically typed)                                  | Runtime (dynamically typed)                                                      |
-| **Requires Initialization** | ✅ Yes, must be initialized at declaration                        | ❌ No, can be declared without initialization                                     |
-| **Type Changes**            | ❌ Cannot change after initialization                             | ✅ Can change during runtime                                                      |
+| **Requires Initialization** | ✅ Yes, must be initialized at declaration                       | ❌ No, can be declared without initialization                                    |
+| **Type Changes**            | ❌ Cannot change after initialization                            | ✅ Can change during runtime                                                     |
 | **Performance**             | Faster (type checked at compile time)                            | Slower (type resolved at runtime)                                                |
-| **IntelliSense Support**    | ✅ Full IntelliSense and compile-time checking                    | ⚠️ Limited IntelliSense, runtime errors possible                                 |
+| **IntelliSense Support**    | ✅ Full IntelliSense and compile-time checking                   | ⚠️ Limited IntelliSense, runtime errors possible                                 |
 | **Use Case**                | When the type is known at compile time but you want cleaner code | When working with dynamic or unknown types (e.g., reflection, COM objects, JSON) |
 
 ## 🧾 Example
+
 ```csharp
 // Using var - type known at compile time
 var number = 10;         // number is int
 number = "Hello";        // ❌ Compile-time error
 
 // Using dynamic - type resolved at runtime
-dynamic data = 10;       
+dynamic data = 10;
 data = "Hello";          // ✅ Valid (runtime type changes)
 data = DateTime.Now;     // ✅ Also valid
 
 ```
+
 ## ⚠️ Important Notes
 
 - `var` cannot be used as a method parameter or return type.
@@ -695,6 +753,7 @@ data = DateTime.Now;     // ✅ Also valid
 - Errors in `var` are caught at `compile time`, while in `dynamic`, they appear at `runtime`.
 
 # 🔧 9. Extension Methods in C#
+
 ## 🧩 Overview
 
 `Extension methods` allow you to add new methods to existing types (classes, structs, or interfaces) without modifying their original source code or creating a new derived type.
@@ -710,6 +769,7 @@ They are a `static` method of a `static` class, but they are called as if they w
 - They enable you to add utility methods to existing .NET types or your own classes non-invasively.
 
 ## 🧾 Syntax
+
 ```csharp
 public static class MyExtensions
 {
@@ -733,17 +793,20 @@ class Program
 }
 
 ```
+
 ### 🧩 Behind the Scenes
+
 Even though you call it like an `instance` method, the compiler translates it into a `static` method call.
 
 ```csharp
 bool result = MyExtensions.IsCapitalized(word);
 ```
+
 ### ⚠️ Rules & Considerations
 
 - The class containing extension methods must be `static`.
 
-- The method itself must be  `static`.
+- The method itself must be `static`.
 
 - The first parameter defines which type is extended and must start with the keyword `this`.
 
@@ -789,7 +852,7 @@ It’s the foundation of all collection types in .NET — arrays, lists, and oth
 
 ## 🧠 Namespace & Definition
 
-``` csharp
+```csharp
 namespace System.Collections
 {
     public interface IEnumerable
@@ -806,22 +869,25 @@ namespace System.Collections.Generic
     }
 }
 ```
+
 ## ✅ Key Point:
 
 - `IEnumerable<T>` returns an enumerator (`IEnumerator<T>`) that provides a way to iterate through the collection.
 
 ## ⚙️ Characteristics of IEnumerable
+
 | Feature                | Description                                                    |
 | ---------------------- | -------------------------------------------------------------- |
 | **Namespace**          | `System.Collections` / `System.Collections.Generic`            |
 | **Type of Execution**  | In-memory (client-side)                                        |
 | **Execution Mode**     | Synchronous                                                    |
-| **Supports LINQ?**     | ✅ Yes (LINQ to Objects)                                        |
-| **Deferred Execution** | ✅ Yes (via LINQ methods)                                       |
+| **Supports LINQ?**     | ✅ Yes (LINQ to Objects)                                       |
+| **Deferred Execution** | ✅ Yes (via LINQ methods)                                      |
 | **Use Case**           | When working with in-memory collections like List, Array, etc. |
 
 ## 🧾 Basic Example
-``` csharp
+
+```csharp
 using System;
 using System.Collections.Generic;
 
@@ -847,51 +913,53 @@ class Program
     5
 **/
 ```
+
 Here, `IEnumerable<int>` allows you to iterate over the collection of integers.
 
 ## 🧠 Custom IEnumerable Example
- You can also create your own class that implements `IEnumerable<T>`.
 
- ```csharp
+You can also create your own class that implements `IEnumerable<T>`.
+
+```csharp
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
 public class FibonacciSequence : IEnumerable<int>
 {
-    private int _count;
+   private int _count;
 
-    public FibonacciSequence(int count)
-    {
-        _count = count;
-    }
+   public FibonacciSequence(int count)
+   {
+       _count = count;
+   }
 
-    public IEnumerator<int> GetEnumerator()
-    {
-        int prev = 0, current = 1;
-        for (int i = 0; i < _count; i++)
-        {
-            yield return prev;
-            int temp = prev;
-            prev = current;
-            current = temp + current;
-        }
-    }
+   public IEnumerator<int> GetEnumerator()
+   {
+       int prev = 0, current = 1;
+       for (int i = 0; i < _count; i++)
+       {
+           yield return prev;
+           int temp = prev;
+           prev = current;
+           current = temp + current;
+       }
+   }
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+   IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
 class Program
 {
-    static void Main()
-    {
-        var fibonacci = new FibonacciSequence(5);
+   static void Main()
+   {
+       var fibonacci = new FibonacciSequence(5);
 
-        foreach (var number in fibonacci)
-        {
-            Console.WriteLine(number);
-        }
-    }
+       foreach (var number in fibonacci)
+       {
+           Console.WriteLine(number);
+       }
+   }
 }
 /**
 output
@@ -901,25 +969,27 @@ output
 2
 3
 **/
- ```
- This demonstrates how you can implement custom iteration logic using `yield return`.
+```
 
- ## 💡 Deferred Execution Example
- ```csharp
- IEnumerable<int> data = GetNumbers();
+This demonstrates how you can implement custom iteration logic using `yield return`.
+
+## 💡 Deferred Execution Example
+
+```csharp
+IEnumerable<int> data = GetNumbers();
 
 foreach (var num in data)
 {
-    Console.WriteLine(num);
+   Console.WriteLine(num);
 }
 
 IEnumerable<int> GetNumbers()
 {
-    Console.WriteLine("Start fetching numbers...");
-    yield return 1;
-    yield return 2;
-    yield return 3;
-    Console.WriteLine("Done fetching numbers!");
+   Console.WriteLine("Start fetching numbers...");
+   yield return 1;
+   yield return 2;
+   yield return 3;
+   Console.WriteLine("Done fetching numbers!");
 }
 
 /**
@@ -929,9 +999,10 @@ Start fetching numbers...
 3
 Done fetching numbers!
 **/
- ```
+```
 
 ## ⚖️ Advantages
+
 ✅ Simple way to iterate over collections<br>
 ✅ Supports LINQ and deferred execution <br>
 ✅ Reduces memory usage (fetches data lazily)<br>
@@ -945,6 +1016,7 @@ Done fetching numbers!
 ❌ Works in-memory only (unlike `IQueryable`)<br>
 
 ## 🧩 Interview Tip
+
 ```
 Q: What is the difference between IEnumerable and IEnumerator?
 A:
@@ -961,6 +1033,7 @@ A:
 - When a method uses `yield` return, the compiler automatically generates the logic for `IEnumerable` or `IEnumerator`.
 
 ## ⚙️ Syntax
+
 ```csharp
 yield return <expression>;
 yield break;
@@ -971,6 +1044,7 @@ yield break;
 - yield break — stops the iteration early.
 
 ## 🧠 Key Points
+
 | Feature          | Description                                                                     |
 | ---------------- | ------------------------------------------------------------------------------- |
 | **Purpose**      | Used to create iterator methods easily                                          |
@@ -980,6 +1054,7 @@ yield break;
 | **Control Flow** | Saves the current state of iteration between calls                              |
 
 ## 🧾 Example 1: Basic Use of yield return
+
 ```csharp
 using System;
 using System.Collections.Generic;
@@ -1007,9 +1082,11 @@ class Program
 3
 **/
 ```
+
 - 💡 The compiler automatically creates an iterator object that remembers where it left off after each `yield` return.
 
 ## 🧩 Example 2: Using yield break
+
 ```csharp
 static IEnumerable<int> GetNumbers()
 {
@@ -1027,10 +1104,13 @@ static IEnumerable<int> GetNumbers()
 3
 **/
 ```
+
 - Here, iteration stops when `i == 4` due to `yield break`.
 
 ## ⚡ Example 3: Deferred Execution
+
 `yield` supports deferred execution — elements are generated only when iterated.
+
 ```csharp
 static IEnumerable<int> GetNumbers()
 {
@@ -1056,6 +1136,7 @@ Start
 End
 **/
 ```
+
 💡 The method executes only during iteration, not when `GetNumbers()` is called — demonstrating lazy evaluation.
 
 ## 🧾 When to Use yield
@@ -1081,6 +1162,7 @@ End
 3. Methods that return anything other than IEnumerable/IEnumerator.
 
 ## 💡 Interview Tip
+
 ```
 Q: What is the advantage of using yield in C#?
 A: It simplifies iterator creation, enables deferred execution, and reduces memory usage by returning data lazily instead of building large collections in memory.
@@ -1094,6 +1176,7 @@ A: It simplifies iterator creation, enables deferred execution, and reduces memo
 It provides the mechanism to traverse items one at a time without exposing the underlying collection structure.
 
 ## 🧠 Namespace & Definition
+
 ```csharp
 namespace System.Collections
 {
@@ -1114,7 +1197,9 @@ namespace System.Collections.Generic
 }
 
 ```
+
 ## ⚙️ Key Members
+
 | Member           | Description                                                                          |
 | ---------------- | ------------------------------------------------------------------------------------ |
 | **`Current`**    | Returns the current element in the collection.                                       |
@@ -1123,6 +1208,7 @@ namespace System.Collections.Generic
 | **`Dispose()`**  | Releases unmanaged resources (in the generic version).                               |
 
 ## 🧾 Example: Using IEnumerator Manually
+
 ```csharp
 using System;
 using System.Collections;
@@ -1148,9 +1234,11 @@ class Program
 **/
 
 ```
+
 💡 The foreach loop in C# internally uses IEnumerator to iterate over a collection.
 
 ## 🧠 How foreach Uses IEnumerator
+
 ```csharp
 foreach (var item in collection)
 {
@@ -1161,7 +1249,9 @@ foreach (var item in collection)
 }
 
 ```
+
 Equivalent to:
+
 ```cshap
 var enumerator = collection.GetEnumerator();
 try
@@ -1180,6 +1270,7 @@ finally
 ```
 
 ## 🔁 Relationship Between IEnumerable and IEnumerator
+
 | Concept         | Description                                                         |
 | --------------- | ------------------------------------------------------------------- |
 | **IEnumerable** | Provides an enumerator using `GetEnumerator()`                      |
@@ -1187,11 +1278,13 @@ finally
 | **Link**        | `IEnumerable.GetEnumerator()` returns an `IEnumerator`              |
 
 ## Visual Flow
+
 ```csharp
 foreach → calls GetEnumerator() → returns IEnumerator
 → MoveNext() → Current → repeat until MoveNext() = false
 
 ```
+
 ## ⚖️ Advantages
 
 ✅ Enables custom iteration logic<br>
@@ -1207,6 +1300,7 @@ foreach → calls GetEnumerator() → returns IEnumerator
 ❌ Must call `Reset()` to start over (usually avoided)<br>
 
 ## 🧾 Summary Table
+
 | Feature            | Description                                         |
 | ------------------ | --------------------------------------------------- |
 | **Interface Name** | `IEnumerator` / `IEnumerator<T>`                    |
@@ -1224,6 +1318,7 @@ foreach → calls GetEnumerator() → returns IEnumerator
 It is part of the `System.Linq` namespace and is commonly used in Entity Framework and LINQ to SQL for querying data sources that support query translation.
 
 ## 🧠 Definition
+
 ```csharp
 public interface IQueryable : IEnumerable
 {
@@ -1233,9 +1328,11 @@ public interface IQueryable : IEnumerable
 }
 
 ```
+
 `IQueryable<T>` inherits from `IEnumerable<T>` and adds the ability to build expression trees that represent queries, which are later executed by a query provider (e.g., EF Core).
 
 ## 🔍 Key Characteristics
+
 | Feature            | Description                                                                  |
 | ------------------ | ---------------------------------------------------------------------------- |
 | **Namespace**      | `System.Linq`                                                                |
@@ -1245,6 +1342,7 @@ public interface IQueryable : IEnumerable
 | **Use Case**       | When querying remote data sources (like databases, APIs)                     |
 
 ## 💡 Example — Basic Usage
+
 ```csharp
 using System;
 using System.Linq;
@@ -1255,7 +1353,7 @@ public class Program
     public static void Main()
     {
         List<int> numbers = new List<int> { 1, 2, 3, 4, 5 };
-        
+
         // IQueryable example (simulating LINQ to SQL or EF)
         IQueryable<int> queryableNumbers = numbers.AsQueryable();
 
@@ -1275,19 +1373,21 @@ public class Program
 25
 **/
 ```
+
 ## ⚙️ How It Works
 
 1. **Expression Tree Creation:**<br>
-i. When you write a query like .Where(n => n > 2), it is not executed immediately.<br>
-ii. Instead, an expression tree is built, representing the query.
+   i. When you write a query like .Where(n => n > 2), it is not executed immediately.<br>
+   ii. Instead, an expression tree is built, representing the query.
 
 2. **Deferred Execution:**<br>
-The query executes only when enumerated (e.g., in a `foreach` loop or .`ToList()` call).
+   The query executes only when enumerated (e.g., in a `foreach` loop or .`ToList()` call).
 
 3. **Query Translation:**<br>
-In ORMs like Entity Framework, the expression tree is translated to SQL and executed in the database.
+   In ORMs like Entity Framework, the expression tree is translated to SQL and executed in the database.
 
 ## 🧾 Example — Entity Framework Usage
+
 ```csharp
 using (var context = new AppDbContext())
 {
@@ -1299,12 +1399,14 @@ using (var context = new AppDbContext())
 }
 
 ```
+
 ## ✅ Explanation:
 
 - The `Where()` builds a query expression.
 - The actual SQL query is executed only when `.ToList()` is called.
 
 ## ⚖️ Difference Between IEnumerable and IQueryable
+
 | Feature                | `IEnumerable`                          | `IQueryable`                |
 | ---------------------- | -------------------------------------- | --------------------------- |
 | **Execution**          | In-memory                              | Database/server-side        |
@@ -1314,6 +1416,7 @@ using (var context = new AppDbContext())
 | **Best For**           | Small in-memory collections            | Large external data sources |
 
 # ⚙️ 14. IAsyncEnumerable<T> in C#
+
 ## 🧩 Overview
 
 `IAsyncEnumerable<T>` is an interface introduced in C# 8.0 that allows you to iterate over a sequence of data asynchronously using the await foreach loop. <br>
@@ -1321,6 +1424,7 @@ using (var context = new AppDbContext())
 It’s useful when working with data streams or asynchronous operations — especially when retrieving large datasets, reading files, or making database/network calls where waiting synchronously would block the thread.
 
 ## 🧠 Definition
+
 ```csharp
 public interface IAsyncEnumerable<out T>
 {
@@ -1328,7 +1432,9 @@ public interface IAsyncEnumerable<out T>
 }
 
 ```
+
 ## 🔍 Key Characteristics
+
 | Feature             | Description                                       |
 | ------------------- | ------------------------------------------------- |
 | **Namespace**       | `System.Collections.Generic`                      |
@@ -1339,6 +1445,7 @@ public interface IAsyncEnumerable<out T>
 | **Loop Type**       | `await foreach`                                   |
 
 ## 💡 Example — Basic Usage
+
 ```csharp
 using System;
 using System.Collections.Generic;
@@ -1372,6 +1479,7 @@ public class Program
 5
 **/
 ```
+
 ## ✅ Explanation:
 
 1. The method `GenerateNumbersAsync()` returns `IAsyncEnumerable<int>`.
@@ -1381,6 +1489,7 @@ public class Program
 3. `await foreach` consumes the asynchronous sequence.
 
 ## 🧩 Example — Database Scenario (EF Core)
+
 ```csharp
 using var context = new AppDbContext();
 
@@ -1390,6 +1499,7 @@ await foreach (var user in context.Users.AsAsyncEnumerable())
 }
 
 ```
+
 ## ✅ Explanation:
 
 1. `AsAsyncEnumerable()` converts a database query to an asynchronous stream.
@@ -1397,6 +1507,7 @@ await foreach (var user in context.Users.AsAsyncEnumerable())
 2. The `await foreach` loop asynchronously reads rows as they’re available, improving scalability for large result sets.
 
 ## ⚖️ Difference Between `IEnumerable<T>` and `IAsyncEnumerable<T>`
+
 | Feature             | `IEnumerable<T>`            | `IAsyncEnumerable<T>`           |
 | ------------------- | --------------------------- | ------------------------------- |
 | **Iteration Type**  | Synchronous                 | Asynchronous                    |
@@ -1406,14 +1517,13 @@ await foreach (var user in context.Users.AsAsyncEnumerable())
 | **Use Case**        | In-memory, fast collections | I/O-bound or network operations |
 | **Thread Blocking** | Blocks thread               | Non-blocking, async             |
 
-
 ## ⚠️ Important Notes
+
 1. You must mark the consuming method as `async` when using `await foreach`.
 
 2. The source method returning `IAsyncEnumerable<T>` can use `yield return` with `await` for asynchronous data generation.
 
 3. Works best with I/O-bound operations (database, APIs, streams, etc.).
-
 
 # ⚙️ 15. Generics in C#
 
@@ -1424,6 +1534,7 @@ await foreach (var user in context.Users.AsAsyncEnumerable())
 They help in code reusability, type safety, and performance improvement by avoiding boxing/unboxing and runtime type casting.
 
 ## 🧠 Definition
+
 ```csharp
 // Generic class
 public class GenericClass<T>
@@ -1456,6 +1567,7 @@ Value: Hello Generics
 ```
 
 ## 🔍 Why Use Generics?
+
 | Feature              | Description                                 |
 | -------------------- | ------------------------------------------- |
 | **Type Safety**      | Ensures compile-time checking of types      |
@@ -1464,7 +1576,9 @@ Value: Hello Generics
 | **Maintainability**  | Reduces code duplication and runtime errors |
 
 ## 🧩 Generic Methods
+
 You can also create **generic methods** inside **normal or generic classes**.
+
 ```csharp
 public class Program
 {
@@ -1481,7 +1595,9 @@ public class Program
 }
 
 ```
+
 ## 🧰 Generic Constraints
+
 You can **restrict the type parameters** using constraints for more control.
 
 | Constraint                | Description                                  |
@@ -1504,6 +1620,7 @@ public class Repository<T> where T : class, new()
 ```
 
 ## 🧾 Example — Generic Interface
+
 ```csharp
 public interface IRepository<T>
 {
@@ -1520,8 +1637,11 @@ public class Repository<T> : IRepository<T>
 }
 
 ```
+
 ## 🧠 Advanced Concept — Generic Delegates
+
 C# also supports **generic delegates**:
+
 ```csharp
 Func<int, string> convert = num => $"Number: {num}";
 Action<string> print = msg => Console.WriteLine(msg);
@@ -1529,11 +1649,13 @@ Predicate<int> isEven = num => num % 2 == 0;
 ```
 
 ## ✅ Interview Tip
+
 **Q**. Why are generics better than using object type parameters?<br>
 **Answer:**<br>
 Because generics ensure compile-time type safety, avoid runtime casting, and improve performance by preventing boxing/unboxing.
 
 # ⚙️ 16. Delegates in C#
+
 ## 🧩 Overview
 
 A **delegate** in C# is a type-safe function pointer — it holds a reference to a method and allows methods to be passed as parameters, invoked dynamically, or used as callbacks.
@@ -1541,6 +1663,7 @@ A **delegate** in C# is a type-safe function pointer — it holds a reference to
 Delegates enable decoupling between the caller and the method being called, supporting event-driven and functional programming in C#.
 
 ## 🧠 Definition
+
 ```csharp
 // Delegate Declaration
 public delegate void MyDelegate(string message);
@@ -1553,6 +1676,7 @@ public delegate void MyDelegate(string message);
 - The delegate can hold a reference to any method with a matching signature and return type.
 
 ## 💡 Example — Basic Delegate Usage
+
 ```csharp
 using System;
 
@@ -1591,6 +1715,7 @@ Good evening, Bob!
 - You can combine multiple methods using += (multicast delegate).
 
 ## 🧰 Why Use Delegates?
+
 | Benefit                    | Description                                           |
 | -------------------------- | ----------------------------------------------------- |
 | **Decoupling**             | Caller doesn’t need to know which method will execute |
@@ -1600,6 +1725,7 @@ Good evening, Bob!
 | **Functional Programming** | Supports lambdas and anonymous functions              |
 
 ## 🧩 Types of Delegates
+
 1. **Single-cast Delegate**
 
 - Holds a reference to one method.
@@ -1610,13 +1736,17 @@ greet("Alice");
 ```
 
 2. **Multicast Delegate**
+
 - Can hold multiple methods and invoke them in sequence.
+
 ```csharp
 MyDelegate greetAll = GreetMorning;
 greetAll += GreetEvening;
 greetAll("John");
 ```
+
 3. **Generic Delegates**
+
 - C# provides built-in generic delegate types:
 
 | Delegate Type      | Description                                    | Example                                          |
@@ -1626,6 +1756,7 @@ greetAll("John");
 | `Predicate<T>`     | Represents a method that **returns a boolean** | `Predicate<int> isEven = x => x % 2 == 0;`       |
 
 ## ⚙️ Delegate with Anonymous Method
+
 ```csharp
 MyDelegate showMessage = delegate(string msg)
 {
@@ -1636,12 +1767,14 @@ showMessage("Hello from anonymous method!");
 ```
 
 ## 🧠 Delegate with Lambda Expression
+
 ```csharp
 MyDelegate display = (msg) => Console.WriteLine($"Lambda says: {msg}");
 display("Hello from Lambda!");
 ```
 
 ## 🧾 Example — Delegate as a Callback
+
 ```csharp
 public class MathOperations
 {
@@ -1663,7 +1796,9 @@ public class Program
     }
 }
 ```
+
 ## ⚖️ Difference Between Delegate, Func, Action, and Predicate
+
 | Type               | Return Type    | Parameters     | Description                            |
 | ------------------ | -------------- | -------------- | -------------------------------------- |
 | `Delegate`         | Custom defined | Custom defined | Base concept                           |
@@ -1672,8 +1807,10 @@ public class Program
 | `Predicate<T>`     | `bool`         | 1              | Used for conditions and filtering      |
 
 ## 🧠 Interview Tip
+
 **Q.** What’s the difference between Delegates and Events?<br>
 **Answer:** <br>
+
 - A delegate is a reference to a method.
 - An event is a wrapper around a delegate that restricts access — only the declaring class can invoke it, while others can subscribe/unsubscribe.
 
@@ -1691,6 +1828,7 @@ Events are built on top of delegates — they provide a safe and structured way 
 - Other classes can **subscribe (+=)** or **unsubscribe (-=)** to be notified.
 
 ## 💡 Example — Basic Event Usage
+
 ```csharp
 using System;
 
@@ -1732,12 +1870,13 @@ public class Program
     }
 }
 /**
-output 
+output
 Process started...
 Process finished!
 Notification: Process Completed Successfully!
 **/
 ```
+
 ### ✅ Explanation:
 
 1. `event` keyword declares an event based on a delegate type.
@@ -1745,6 +1884,7 @@ Notification: Process Completed Successfully!
 2. `?.Invoke()` ensures the event is raised only if there are subscribers.
 
 ## 🧰 Why Use Events?
+
 | Benefit             | Description                                                            |
 | ------------------- | ---------------------------------------------------------------------- |
 | **Loose Coupling**  | Subscribers don’t need to know the internal logic of the publisher     |
@@ -1753,7 +1893,9 @@ Notification: Process Completed Successfully!
 | **Maintainability** | Clear separation between trigger (publisher) and response (subscriber) |
 
 ## 🧩 Event with EventHandler
+
 C# provides the `EventHandler` delegate as a built-in standard for defining events.
+
 ```csharp
 public class Process
 {
@@ -1787,7 +1929,9 @@ public class Program
     }
 }
 ```
+
 ### ✅ Explanation:
+
 - Uses the standard EventHandler delegate:
 
 ```csharp
@@ -1799,7 +1943,9 @@ public delegate void EventHandler(object sender, EventArgs e);
 - EventArgs → carries additional event data (empty here).
 
 ## ⚙️ Event with Custom EventArgs
+
 - You can send custom data through events using a class derived from `EventArgs`.
+
 ```csharp
 public class ProcessEventArgs : EventArgs
 {
@@ -1836,6 +1982,7 @@ public class Program
     }
 }
 ```
+
 ### ✅ Explanation:
 
 1. `ProcessEventArgs` holds custom event data.
@@ -1851,12 +1998,13 @@ public class Program
 | **Access Control** | Publicly accessible                 | Restricted to publisher                           |
 | **Use Case**       | Callbacks, anonymous methods        | Notifications, message broadcasting               |
 
-
 ### 🧠 Interview Tip
+
 **Q.** What’s the difference between an Event and a Delegate?<br>
 **Answer**: A delegate is a method reference type, while an event is a language feature that restricts access to delegates so that only the declaring class can invoke them. Events are the publish-subscribe layer built on top of delegates.
 
 # ⚙️18. Task in C#
+
 ## 🧩 Definition
 
 A `Task` in C# represents an `asynchronous operation that can run independently of the main thread`.
@@ -1875,6 +2023,7 @@ Tasks simplify concurrent programming by handling thread management, synchroniza
 - To improve performance and responsiveness in applications.
 
 ## 🧾 Basic Example
+
 ```csharp
 using System;
 using System.Threading.Tasks;
@@ -1906,6 +2055,7 @@ Main method completed.
 ```
 
 ### 🔹 Task with Return Value
+
 ```csharp
 Task<int> task = Task.Run(() =>
 {
@@ -1922,7 +2072,9 @@ Console.WriteLine($"Sum: {result}");
 Sum: 15
 **/
 ```
+
 ### 🔹 Task with async/await (Recommended Way)
+
 ```csharp
 using System;
 using System.Threading.Tasks;
@@ -1945,18 +2097,21 @@ class Program
 Result: 15
 **/
 ```
+
 ## ⚙️ Key Features of Task
+
 | Feature                  | Description                                  |
 | ------------------------ | -------------------------------------------- |
 | **Namespace**            | `System.Threading.Tasks`                     |
 | **Return Type**          | `Task` or `Task<TResult>`                    |
-| **Supports async/await** | Yes ✅                                        |
+| **Supports async/await** | Yes ✅                                       |
 | **Cancellation**         | Via `CancellationToken`                      |
 | **Exception Handling**   | Through `try/catch` or `task.ContinueWith()` |
 | **Thread Pool Usage**    | Uses threads from the CLR-managed pool       |
 | **Continuation**         | Allows chaining tasks using `ContinueWith()` |
 
 ## 🧩 Example: Task Continuation
+
 ```csharp
 Task.Run(() => Console.WriteLine("Task 1"))
     .ContinueWith(t => Console.WriteLine("Task 2 after Task 1"))
@@ -1969,6 +2124,7 @@ Task 3 after Task 2
 ```
 
 ### 🔹 Task Cancellation Example
+
 ```csharp
 using System;
 using System.Threading;
@@ -2004,56 +2160,65 @@ class Program
     }
 }
 /**
-Working... 0  
-Working... 1  
-Working... 2  
+Working... 0
+Working... 1
+Working... 2
 Task was cancelled.
 
 **/
 ```
+
 ## 🆚 Task vs Thread (Quick Comparison)
-| Feature                  | **Task**                | **Thread**                   |
-| ------------------------ | ----------------------- | ---------------------------- |
-| **Abstraction Level**    | High                    | Low                          |
-| **Return Value**         | ✅ Yes (`Task<TResult>`) | ❌ No                         |
-| **Cancellation Support** | ✅ Yes                   | ❌ No                         |
-| **Exception Handling**   | Easy (`try/catch`)      | Manual                       |
-| **Async/Await Support**  | ✅ Yes                   | ❌ No                         |
-| **Performance**          | Efficient (Thread Pool) | Expensive (dedicated thread) |
+
+| Feature                  | **Task**                 | **Thread**                   |
+| ------------------------ | ------------------------ | ---------------------------- |
+| **Abstraction Level**    | High                     | Low                          |
+| **Return Value**         | ✅ Yes (`Task<TResult>`) | ❌ No                        |
+| **Cancellation Support** | ✅ Yes                   | ❌ No                        |
+| **Exception Handling**   | Easy (`try/catch`)       | Manual                       |
+| **Async/Await Support**  | ✅ Yes                   | ❌ No                        |
+| **Performance**          | Efficient (Thread Pool)  | Expensive (dedicated thread) |
 
 ## 💡 Interview Tip
+
 ✅ “A Task in C# represents an asynchronous operation.
 It’s a higher-level abstraction built on top of threads, offering better performance, exception handling, and async support.”
-
 
 # ValueTask in C#
 
 ## 1. What is ValueTask?
+
 `ValueTask` and `ValueTask<T>` are lightweight alternatives to `Task` and `Task<T>`  
 introduced to **reduce memory allocations** in high-performance and hot-path code.
 
 They are most useful when an async method:
+
 - **Often completes synchronously**, and
 - **Only sometimes needs to be truly asynchronous**
 
 > Think of `ValueTask` as:  
-> **“A result that *might* already be available, or *might* come later.”**
+> **“A result that _might_ already be available, or _might_ come later.”**
 
 ---
 
 ## 2. Why ValueTask Exists
 
 ### Problem with `Task`
+
 Every `async` method that returns `Task`:
+
 - Allocates a `Task` object on the heap
 - Even if the result is already available
 
 In high-throughput systems, these allocations:
+
 - Increase GC pressure
 - Reduce performance
 
 ### Solution
+
 `ValueTask`:
+
 - Avoids allocation **when the result is already available**
 - Falls back to `Task` only when needed
 
@@ -2076,20 +2241,25 @@ ValueTask<int> GetFromCacheAsync()
 }
 
 ```
+
 ## 4. ValueTask vs Task
+
 | Feature         | Task             | ValueTask            |
 | --------------- | ---------------- | -------------------- |
 | Allocation      | Always allocates | May avoid allocation |
 | Awaitable       | Yes              | Yes                  |
-| Multiple awaits | ✅ Allowed        | ❌ Not allowed        |
-| Can be cached   | Yes              | ❌ Dangerous          |
+| Multiple awaits | ✅ Allowed       | ❌ Not allowed       |
+| Can be cached   | Yes              | ❌ Dangerous         |
 | Complexity      | Simple           | Advanced             |
 | Use case        | General async    | Performance-critical |
 
 ## 5. How ValueTask Works (Conceptually)
+
 ValueTask<T> internally stores:
+
 - The result (if completed synchronously), or
 - A reference to a Task<T>
+
 ```
 ValueTask<T>
  ├─ Result (no allocation)
@@ -2097,10 +2267,13 @@ ValueTask<T>
 ```
 
 ## 6. Correct Usage (Very Important)
+
 ### 6.1 Await Only Once ✅
+
 ```csharp
 await GetValueAsync(); // OK
 ```
+
 ❌ Incorrect:
 
 ```csharp
@@ -2110,20 +2283,26 @@ await vt; // ❌ Undefined behavior
 ```
 
 ### 6.2 Do NOT Store ValueTask ❌
+
 ```csharp
 private ValueTask<int> _cached; // ❌
 ```
+
 ValueTask is not reusable.
 
 ### ValueTask is not reusable.
+
 ```csharp
 Task<int> task = GetValueAsync().AsTask();
 ```
+
 Use this when:
+
 - You must await multiple times
 - You need to pass it to APIs expecting Task
 
 ## 9. ValueTask vs Task.CompletedTask
+
 | Scenario                    | Best Choice          |
 | --------------------------- | -------------------- |
 | Always completes sync       | `Task.CompletedTask` |
@@ -2131,6 +2310,7 @@ Use this when:
 | Always async                | `Task`               |
 
 # ⚙️19. Thread in C#
+
 ## 🧩 Definition
 
 A `Thread` in C# represents the `smallest unit of execution within a process`.
@@ -2139,6 +2319,7 @@ Each thread can execute code independently, allowing multiple operations to run 
 Threads are managed by the operating system and are part of the `System.Threading` namespace.
 
 ## 🧠 Purpose
+
 - To perform multiple tasks simultaneously (parallelism).
 
 - To improve responsiveness in applications (e.g., UI remains active while background work runs).
@@ -2146,6 +2327,7 @@ Threads are managed by the operating system and are part of the `System.Threadin
 - To run background operations independently of the main program flow.
 
 ## 🧾 Basic Example: Creating and Starting a Thread
+
 ```csharp
 using System;
 using System.Threading;
@@ -2178,7 +2360,9 @@ Worker thread: 4
 Worker thread: 5
 **/
 ```
+
 ### 🔹 Creating a Thread with Lambda Expression
+
 ```csharp
 Thread thread = new Thread(() =>
 {
@@ -2188,6 +2372,7 @@ thread.Start();
 ```
 
 ## ⚙️ Key Properties of Thread
+
 | Property      | Description                                          |
 | ------------- | ---------------------------------------------------- |
 | **Namespace** | `System.Threading`                                   |
@@ -2198,6 +2383,7 @@ thread.Start();
 | **Join()**    | Blocks the calling thread until the thread completes |
 
 ## 🧩 Example: Using Join()
+
 ```csharp
 Thread thread = new Thread(() =>
 {
@@ -2216,7 +2402,9 @@ Thread completed.
 Main thread resumes after join.
 **/
 ```
+
 ### 🔹 Foreground vs Background Threads
+
 | Type                  | Description                                            |
 | --------------------- | ------------------------------------------------------ |
 | **Foreground Thread** | Keeps the process alive until it finishes (default).   |
@@ -2239,7 +2427,9 @@ Main thread ending...
 **/
 // (The program may end before the background thread finishes.)
 ```
+
 ## 🧩 Example: Thread with Parameters
+
 ```csharp
 Thread thread = new Thread(PrintMessage);
 thread.Start("Hello from Thread!");
@@ -2250,11 +2440,14 @@ static void PrintMessage(object message)
 }
 // Hello from Thread!
 ```
+
 ## ⚙️ Thread Safety
+
 When multiple threads access shared data, it can cause `race conditions` or `data corruption`.
 To prevent this, use `locks` or `thread synchronization` techniques.
 
 ### Example using `lock` keyword:
+
 ```csharp
 static object lockObj = new();
 static int counter = 0;
@@ -2271,6 +2464,7 @@ static void Increment()
 }
 
 ```
+
 ## 🧠 Advantages of Using Threads
 
 - Improves application responsiveness.
@@ -2280,6 +2474,7 @@ static void Increment()
 - Utilizes multiple CPU cores efficiently.
 
 ## ⚠️ Disadvantages
+
 - Difficult to manage and debug.
 
 - Can cause race conditions and deadlocks.
@@ -2287,25 +2482,31 @@ static void Increment()
 - Consumes more memory and resources than higher-level abstractions like Task.
 
 ## 💡 Interview Tip
+
 ✅ “A Thread is the smallest unit of execution in a process.
 It allows concurrent code execution but requires manual management of synchronization and lifecycle.”
 
 # 📘 20. Records in C#
+
 ## 🧩 What Are Records?
+
 Records are `reference types` introduced in C# 9.0 designed to make it easier to create `immutable data models (data-carrying objects)` with built-in value equality.
 
 **A record is like a class, but it’s optimized for holding data rather than behavior.**
 
 ## 🧱 Key Characteristics
+
 | Feature                       | Description                                                                                                                                  |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Immutability**              | Record properties are typically *init-only* — they can be set only during initialization.                                                    |
-| **Value-based Equality**      | Two records with the same data are considered *equal*, unlike classes which use *reference equality* by default.                             |
-| **Concise Syntax**            | Records can be declared with a *positional syntax* that automatically generates constructors, `Equals()`, `GetHashCode()`, and `ToString()`. |
+| **Immutability**              | Record properties are typically _init-only_ — they can be set only during initialization.                                                    |
+| **Value-based Equality**      | Two records with the same data are considered _equal_, unlike classes which use _reference equality_ by default.                             |
+| **Concise Syntax**            | Records can be declared with a _positional syntax_ that automatically generates constructors, `Equals()`, `GetHashCode()`, and `ToString()`. |
 | **Built-in with-expressions** | You can easily create copies of records with modified properties using the `with` expression.                                                |
 
 ## 🧠 Syntax
+
 ### 1. Basic Record Declaration
+
 ```csharp
 public record Person
 {
@@ -2313,10 +2514,13 @@ public record Person
     public string LastName { get; init; }
 }
 ```
+
 ### 2. Positional Record (Concise Form)
+
 ```csharp
 public record Person(string FirstName, string LastName);
 ```
+
 This automatically generates:
 
 - A constructor with parameters FirstName and LastName
@@ -2328,16 +2532,20 @@ This automatically generates:
 - A `Deconstruct()` method
 
 ## 🔁 Example: Equality
+
 ```csharp
 var p1 = new Person("John", "Doe");
 var p2 = new Person("John", "Doe");
 
 Console.WriteLine(p1 == p2); // ✅ True (Value equality)
 ```
+
 _If this were a class, the output would be `False` because classes compare `references by default`._
 
 ## 🧍‍♂️ Copying with `with` Expression
+
 You can create a copy of a record while changing some values:
+
 ```csharp
 var p1 = new Person("John", "Doe");
 var p2 = p1 with { LastName = "Smith" };
@@ -2346,6 +2554,7 @@ Console.WriteLine(p2); // Output: Person { FirstName = John, LastName = Smith }
 ```
 
 ## 🧩 Inheritance with Records
+
 Records can be `inherited` — and they preserve `value equality` across hierarchies.
 
 ```csharp
@@ -2354,14 +2563,18 @@ public record Employee(string Name, string Department) : Person(Name);
 ```
 
 ## 🧍‍♀️ Mutable Records (Not Recommended)
+
 You can make record properties mutable, but that goes against their design for immutability.
+
 ```csharp
 public record MutablePerson
 {
     public string Name { get; set; } // mutable
 }
 ```
+
 ## ⚖️ Record vs Class
+
 | Feature          | Record                          | Class                    |
 | ---------------- | ------------------------------- | ------------------------ |
 | Equality         | Value-based                     | Reference-based          |
@@ -2370,11 +2583,14 @@ public record MutablePerson
 | Typical Use Case | DTOs, Models, Immutable Objects | Business Logic, Entities |
 
 ## Accessing Properties
+
 You can access record properties just like class properties — using the `dot (.)` operator.
+
 ```csharp
 Console.WriteLine(person.FirstName);  // Output: John
 Console.WriteLine(person.LastName);   // Output: Doe
 ```
+
 ### ✅ Explanation:
 
 - Each property in a record is `public` and `read-only` by default (when using positional syntax).
@@ -2382,7 +2598,9 @@ Console.WriteLine(person.LastName);   // Output: Doe
 - You can read its value directly.
 
 ## Records with Property Initializers
+
 If you define a record using property syntax, you can access the properties the same way:
+
 ```csharp
 public record Employee
 {
@@ -2397,7 +2615,9 @@ Console.WriteLine(emp.Department);  // Output: HR
 ```
 
 ## Using Deconstruction (Optional Way)
+
 You can `deconstruct` record properties into local variables.
+
 ```csharp
 var person = new Person("John", "Doe");
 
@@ -2408,6 +2628,7 @@ Console.WriteLine(lastName);  // Output: Doe
 ```
 
 ## 🧭 Summary
+
 | Concept           | Description                                    |
 | ----------------- | ---------------------------------------------- |
 | **Record Type**   | Reference type optimized for immutable data    |
@@ -2419,12 +2640,15 @@ Console.WriteLine(lastName);  // Output: Doe
 # 🧩 21. Tuples in C#
 
 ## What is a Tuple?
+
 `Tuple` in C# is a data structure that allows you to store `multiple values of different data types` in a `single object without creating a custom class or struct`.
 
 It’s often used to `return multiple values from a method` easily.
 
 ## Syntax
+
 ✅ Using Classic Tuple Class (Before C# 7.0)
+
 ```csharp
 Tuple<int, string, bool> person = new Tuple<int, string, bool>(1, "John", true);
 
@@ -2432,10 +2656,12 @@ Console.WriteLine(person.Item1); // 1
 Console.WriteLine(person.Item2); // John
 Console.WriteLine(person.Item3); // True
 ```
+
 🔸 Item1, Item2, etc., are the default property names.
 
 ✅ Using Modern Value Tuples (C# 7.0 and Later)
 Value tuples provide `better syntax and named fields`:
+
 ```csharp
 var person = (Id: 1, Name: "John", IsActive: true);
 
@@ -2445,7 +2671,9 @@ Console.WriteLine(person.IsActive); // True
 ```
 
 ## Returning Multiple Values from a Method
+
 Tuples are commonly used to return multiple values from a function:
+
 ```csharp
 public (int Id, string Name) GetPerson()
 {
@@ -2456,6 +2684,7 @@ var person = GetPerson();
 Console.WriteLine(person.Id);   // 1
 Console.WriteLine(person.Name); // Alice
 ```
+
 ✅ Explanation:
 
 - The method returns a named tuple.
@@ -2463,6 +2692,7 @@ Console.WriteLine(person.Name); // Alice
 - You can access the values using the tuple property names.
 
 ## Deconstructing a Tuple
+
 You can `deconstruct` a tuple into separate variables:
 
 ```csharp
@@ -2471,16 +2701,21 @@ var (id, name) = GetPerson();
 Console.WriteLine(id);   // 1
 Console.WriteLine(name); // Alice
 ```
+
 ## Nested Tuples
+
 Tuples can contain other tuples:
+
 ```csharp
 var nested = (Id: 1, Details: ("Alice", 25));
 
 Console.WriteLine(nested.Details.Item1); // Alice
 Console.WriteLine(nested.Details.Item2); // 25
 ```
+
 ## Comparison: `Tuple` vs `ValueTuple`
-| Feature             | `Tuple<T1, T2, ...>` | `(T1, T2, ...)` *(ValueTuple)* |
+
+| Feature             | `Tuple<T1, T2, ...>` | `(T1, T2, ...)` _(ValueTuple)_ |
 | ------------------- | -------------------- | ------------------------------ |
 | Namespace           | `System`             | `System`                       |
 | Introduced In       | .NET 4.0             | C# 7.0                         |
@@ -2490,7 +2725,9 @@ Console.WriteLine(nested.Details.Item2); // 25
 | Requires Allocation | Yes                  | No (stored on stack)           |
 
 ## Example — Practical Use Case
+
 Returning multiple results after processing data:
+
 ```csharp
 public (int SuccessCount, int FailCount) ProcessData()
 {
@@ -2507,6 +2744,7 @@ Success: 10, Fail: 2
 ```
 
 ## 🧾 Summary
+
 | Concept            | Description                                           |
 | ------------------ | ----------------------------------------------------- |
 | **Tuple**          | Stores multiple items of different types.             |
@@ -2516,18 +2754,23 @@ Success: 10, Fail: 2
 | **Use Case**       | Commonly used to return multiple values from methods. |
 
 # 🎯 22. Pattern Matching in C#
+
 ## What is Pattern Matching?
+
 `Pattern Matching in C#` allows you to `check an object’s type, shape, or value, and extract data from it in a concise and readable way`.
 
 It’s a powerful feature introduced in C# 7.0 and enhanced in later versions (C# 8, 9, 10, and 11).
 
 ## Why Use Pattern Matching?
+
 ✅ Simplifies conditional logic<br>
 ✅ Reduces boilerplate `if` / `switch` code<br>
 ✅ Improves readability and safety (especially with type checks)
 
 ### 1. Type Pattern
+
 Used to `check an object’s type and cast it safely` in a single statement.
+
 ```csharp
 object obj = "Hello World";
 
@@ -2536,13 +2779,17 @@ if (obj is string message)
     Console.WriteLine(message.ToUpper()); // Output: HELLO WORLD
 }
 ```
+
 ✅ Explanation:
 
 1. `is string message` checks if obj is a `string`.
 
 2. If true, obj is automatically cast to a string variable named message.
+
 ### 2. Constant Pattern
+
 Checks if a variable matches a specific constant value.
+
 ```csharp
 int number = 10;
 
@@ -2551,11 +2798,15 @@ if (number is 10)
     Console.WriteLine("Number is ten!");
 }
 ```
+
 ✅ Explanation:
+
 1. No need for `==`; pattern matching handles the comparison.
 
 ### 3. Relational Pattern (C# 9.0+)
+
 Allows comparison operators inside patterns.
+
 ```csharp
 int age = 25;
 
@@ -2564,11 +2815,15 @@ if (age is > 18 and < 60)
     Console.WriteLine("Adult age group");
 }
 ```
+
 ✅ Explanation:
+
 1. Checks if the value of age is greater than 18 and less than 60.
 
 ### 4. Logical Patterns (and/or/not)
+
 Combine multiple patterns using logical operators.
+
 ```csharp
 string role = "Admin";
 
@@ -2582,6 +2837,7 @@ if (role is not "Guest")
     Console.WriteLine("User is not a guest");
 }
 ```
+
 ✅ Explanation:
 
 1. `or` → Matches any of the patterns
@@ -2591,7 +2847,9 @@ if (role is not "Guest")
 3. `not` → Negates a pattern
 
 ### 5. Switch Pattern Matching
+
 Pattern matching also works with the `switch` expression (modern syntax).
+
 ```csharp
 object value = 100;
 
@@ -2606,6 +2864,7 @@ string result = value switch
 
 Console.WriteLine(result); // Output: Large number
 ```
+
 ✅ Explanation:
 
 1. Each case can check type and condition using `when`.
@@ -2613,7 +2872,9 @@ Console.WriteLine(result); // Output: Large number
 2. `_` is the default pattern.
 
 ### 6. Property Pattern (C# 8.0+)
+
 Checks the values of object properties directly.
+
 ```csharp
 var person = new { Name = "Alice", Age = 28 };
 
@@ -2622,11 +2883,15 @@ if (person is { Name: "Alice", Age: > 18 })
     Console.WriteLine("Adult named Alice");
 }
 ```
+
 ✅ Explanation:
+
 1. You can check multiple properties in a single expression.
 
 ### 7. Positional Pattern (C# 8.0+)
+
 Used with `records` or types that support `deconstruction`.
+
 ```csharp
 public record Point(int X, int Y);
 
@@ -2637,9 +2902,13 @@ if (point is (10, 20))
     Console.WriteLine("Point at (10, 20)");
 }
 ```
+
 ✅ Explanation:
+
 1. Deconstructs the record and matches values positionally.
+
 ### 8. Pattern Matching with `switch` Expression (Modern Syntax)
+
 ```csharp
 string GetCategory(int age) => age switch
 {
@@ -2651,10 +2920,13 @@ string GetCategory(int age) => age switch
 
 Console.WriteLine(GetCategory(25)); // Output: Adult
 ```
+
 ✅ Explanation:
+
 1. This concise `switch` expression makes conditional logic easier to read.
 
 ## 🧾 Summary
+
 | Pattern Type           | Description                    | Example                             |
 | ---------------------- | ------------------------------ | ----------------------------------- |
 | **Type Pattern**       | Checks object type             | `if (obj is string s)`              |
@@ -2666,20 +2938,25 @@ Console.WriteLine(GetCategory(25)); // Output: Adult
 | **Switch Pattern**     | Pattern-based branching        | `x switch { ... }`                  |
 
 # ⚡23. Asynchronous Programming in C#
+
 ## What is Asynchronous Programming?
+
 `Asynchronous programming` in C# allows your program to perform `non-blocking operations` — meaning it can continue executing other tasks while waiting for long-running operations (like file I/O, network calls, or database queries) to complete.
 
 ✅ In short:<br>
 It helps your application stay responsive and efficient, especially in UI apps and web servers.
 
 ## Synchronous vs Asynchronous
+
 | Type             | Description                                                                          | Example                                           |
 | ---------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------- |
 | **Synchronous**  | Tasks run **one after another**. The next task waits for the previous one to finish. | Reading a file blocks until it’s completely read. |
 | **Asynchronous** | Tasks run **independently**, allowing other work to continue while waiting.          | Reading a file while UI stays responsive.         |
 
 ## 🧩 Example:
+
 ### Synchronous Code:
+
 ```csharp
 public void DownloadFile()
 {
@@ -2687,7 +2964,9 @@ public void DownloadFile()
     Console.WriteLine("File downloaded!");
 }
 ```
+
 ### Asynchronous Code:
+
 ```csharp
 public async Task DownloadFileAsync()
 {
@@ -2695,10 +2974,12 @@ public async Task DownloadFileAsync()
     Console.WriteLine("File downloaded!");
 }
 ```
+
 ✅ Result:<br>
 The `await` keyword frees the thread while waiting — allowing other operations to run.
 
 ## Core Concepts
+
 1️⃣ async Keyword
 
 Marks a method as `asynchronous` and allows use of the `await` keyword inside it.
@@ -2714,6 +2995,7 @@ Pauses execution of the `async` method until the awaited task completes — with
 - `Task<TResult>` returns a result asynchronously.
 
 ## Example — Async Method Returning Data
+
 ```csharp
 public async Task<string> GetDataAsync()
 {
@@ -2727,6 +3009,7 @@ public async Task ExecuteAsync()
     Console.WriteLine(result);
 }
 ```
+
 ### 🧠 Explanation:
 
 - `await Task.Delay(2000)` pauses for 2 seconds without blocking.
@@ -2734,7 +3017,9 @@ public async Task ExecuteAsync()
 - The control returns to the caller, and execution resumes once the task completes.
 
 ## Async in UI Applications
+
 In `WPF / WinForms`, async keeps the `UI responsive`:
+
 ```csharp
 private async void Button_Click(object sender, EventArgs e)
 {
@@ -2743,10 +3028,13 @@ private async void Button_Click(object sender, EventArgs e)
     StatusLabel.Text = data;
 }
 ```
+
 Without async, the UI would `freeze until the operation completes`.
 
 ## Exception Handling in Async Code
+
 Use `try–catch` around awaited calls:
+
 ```csharp
 try
 {
@@ -2758,10 +3046,12 @@ catch (Exception ex)
     Console.WriteLine($"Error: {ex.Message}");
 }
 ```
+
 ✅ Explanation:<br>
 Exceptions thrown inside an async method are captured and rethrown when awaited.
 
 ## async void vs async Task
+
 | Return Type     | Use Case                            | Notes                                        |
 | --------------- | ----------------------------------- | -------------------------------------------- |
 | `async void`    | Only for **event handlers**         | Exceptions can’t be awaited or caught easily |
@@ -2769,9 +3059,11 @@ Exceptions thrown inside an async method are captured and rethrown when awaited.
 | `async Task<T>` | For async methods returning a value | Returns result asynchronously                |
 
 ## async void in C#
+
 The `async void` return type is used to define asynchronous methods that don’t return a value and can’t be awaited.
 
 ### Syntax Example
+
 ```csharp
 public async void DoWorkAsync()
 {
@@ -2779,6 +3071,7 @@ public async void DoWorkAsync()
     Console.WriteLine("Work completed!");
 }
 ```
+
 ✅ Explanation:
 
 - The method runs asynchronously.
@@ -2788,9 +3081,11 @@ public async void DoWorkAsync()
 - Since the return type is void, you can’t await this method from the caller.
 
 ### When to Use async void
+
 🚫 **Rule of Thumb**: Avoid `async void` except for event handlers.
 
 ### ✅ Valid Example — Event Handler
+
 ```csharp
 private async void Button_Click(object sender, EventArgs e)
 {
@@ -2798,6 +3093,7 @@ private async void Button_Click(object sender, EventArgs e)
     MessageBox.Show("Button clicked!");
 }
 ```
+
 ✅ Explanation:
 
 - UI frameworks (like WPF or WinForms) require event handlers to return `void`.
@@ -2805,15 +3101,21 @@ private async void Button_Click(object sender, EventArgs e)
 - `async void` works here because event handlers can’t return a `Task`.
 
 ### Problems with async void
+
 #### 1. Cannot Be Awaited
+
 You can’t wait for an `async void` method to finish execution.
+
 ```csharp
 DoWorkAsync(); // Fire-and-forget — no way to know when it completes
 ```
+
 ❌ Not suitable when you need to ensure the operation is done before continuing.
 
 #### 2. Exception Handling is Difficult
+
 Exceptions thrown inside an async void method can’t be caught by the caller.
+
 ```csharp
 try
 {
@@ -2824,27 +3126,32 @@ catch (Exception ex)
     Console.WriteLine(ex.Message);
 }
 ```
+
 ✅ Instead, use async Task so the caller can handle exceptions:
 
 #### 3. Fire-and-Forget Behavior
+
 Because you can’t await it, async void methods execute independently —
 you have no control over when or if they complete.<br>
 This can cause:
+
 - Race conditions
 - Unexpected application state
 - Resource leaks in server or background code
 
 ### Comparison: async void vs async Task
-| Feature                 | `async void`               | `async Task`                  |
-| ----------------------- | -------------------------- | ----------------------------- |
-| Return Type             | `void`                     | `Task`                        |
-| Can be awaited?         | ❌ No                       | ✅ Yes                         |
-| Exception Handling      | ❌ Cannot catch in caller   | ✅ Can catch using `try-catch` |
-| Usage                   | Event handlers only        | General async methods         |
-| Control over completion | ❌ No                       | ✅ Yes                         |
-| Best Practice           | Avoid unless event handler | Preferred for async methods   |
+
+| Feature                 | `async void`               | `async Task`                   |
+| ----------------------- | -------------------------- | ------------------------------ |
+| Return Type             | `void`                     | `Task`                         |
+| Can be awaited?         | ❌ No                      | ✅ Yes                         |
+| Exception Handling      | ❌ Cannot catch in caller  | ✅ Can catch using `try-catch` |
+| Usage                   | Event handlers only        | General async methods          |
+| Control over completion | ❌ No                      | ✅ Yes                         |
+| Best Practice           | Avoid unless event handler | Preferred for async methods    |
 
 ### 🧾 Summary - async void
+
 | Concept                | Description                                                    |
 | ---------------------- | -------------------------------------------------------------- |
 | **`async void`**       | Defines an async method that doesn’t return a value or `Task`. |
@@ -2854,20 +3161,27 @@ This can cause:
 | **Best Practice**      | Use only in event handlers; otherwise, prefer `async Task`.    |
 
 ## 🧩 Task.WhenAll() in C#
+
 ### 📘 Overview
+
 `Task.WhenAll()` is a method in C# used to `run multiple tasks concurrently and wait for all of them to complete`.<br>
 It allows asynchronous operations to execute in parallel, improving efficiency when tasks are independent of each other.
+
 ### ⚙️ Syntax
 
 ```csharp
 await Task.WhenAll(task1, task2, task3);
 ```
+
 or for an array/list of tasks:
+
 ```csharp
 var tasks = new List<Task> { task1, task2, task3 };
 await Task.WhenAll(tasks);
 ```
+
 ### 🧠 How It Works
+
 - `Task.WhenAll()` takes multiple Task objects (or Task<T> objects).
 
 - It starts all tasks simultaneously (if not already started).
@@ -2877,6 +3191,7 @@ await Task.WhenAll(tasks);
 - Returns a Task that completes when every provided task has finished execution.
 
 ### ✅ Example 1 — Waiting for Multiple Tasks
+
 ```csharp
 using System;
 using System.Threading.Tasks;
@@ -2900,7 +3215,9 @@ Starting tasks...
 All tasks completed!
 **/
 ```
+
 ### ✅ Example 2 — Returning Values from Tasks
+
 ```csharp
 using System;
 using System.Threading.Tasks;
@@ -2927,7 +3244,9 @@ class Program
 Results: 10, 20
 **/
 ```
+
 ### 🧩 Key Points
+
 | Feature                | Description                                          |
 | ---------------------- | ---------------------------------------------------- |
 | **Parallel Execution** | Runs all tasks concurrently.                         |
@@ -2937,6 +3256,7 @@ Results: 10, 20
 | **Use Case**           | When you have multiple independent async operations. |
 
 ### 🚀 Best Practices
+
 1. ✅ Use Task.WhenAll() instead of multiple awaits when tasks are independent.
 
 2. ❌ Avoid blocking using .Wait() or .Result — always use await.
@@ -2946,6 +3266,7 @@ Results: 10, 20
 4. 💡 Use Task.WhenAny() if you need to proceed when any task finishes first.
 
 ### 🧾 Summary
+
 1. Task.WhenAll() lets you efficiently run and await multiple async operations in parallel.
 
 2. It returns only when all tasks are completed or an exception occurs.
@@ -2953,12 +3274,15 @@ Results: 10, 20
 3. It helps improve performance in scenarios like fetching data from multiple APIs or performing multiple I/O operations.
 
 ## ⚠️ Exception Handling in Task.WhenAll()
+
 ### 📘 Overview
+
 If one or more tasks throw exceptions, Task.WhenAll() does not fail immediately — instead, it waits for all tasks to complete first.<br>
 
 After all tasks finish, it throws a single `AggregateException` that contains all the individual exceptions thrown by those tasks.
 
 ### 🧠 Key Concept
+
 1. `Task.WhenAll()` collects all exceptions from the tasks that faulted.
 
 2. It then wraps them in an `AggregateException` and rethrows it.
@@ -2966,6 +3290,7 @@ After all tasks finish, it throws a single `AggregateException` that contains al
 3. You can access each individual exception through the `InnerExceptions` property.
 
 ### ✅ Example — Multiple Tasks Throw Exceptions
+
 ```csharp
 using System;
 using System.Threading.Tasks;
@@ -2981,7 +3306,7 @@ class Program
         catch (Exception ex)
         {
             Console.WriteLine($"Main catch: {ex.GetType().Name}");
-            
+
             if (ex is AggregateException aggregateEx)
             {
                 foreach (var inner in aggregateEx.InnerExceptions)
@@ -3017,18 +3342,22 @@ Main catch: AggregateException
  - Inner exception: Task3 failed.
 **/
 ```
+
 When you `await Task.WhenAll(...)`, **exceptions are unwrapped** and you usually get:
+
 - a **single exception**, or
 - the **first exception**
 
 `AggregateException` is thrown **only when you block synchronously**.
+
 #### Behavior Difference (Most Important Point)
 
-| How you call `Task.WhenAll` | Exception thrown |
-|----------------------------|------------------|
-| `await Task.WhenAll(...)` | ❌ No AggregateException |
-| `Task.WhenAll(...).Wait()` | ✅ AggregateException |
-| `Task.WhenAll(...).Result` | ✅ AggregateException |
+| How you call `Task.WhenAll` | Exception thrown         |
+| --------------------------- | ------------------------ |
+| `await Task.WhenAll(...)`   | ❌ No AggregateException |
+| `Task.WhenAll(...).Wait()`  | ✅ AggregateException    |
+| `Task.WhenAll(...).Result`  | ✅ AggregateException    |
+
 ```csharp
 var tasks = new[]
 {
@@ -3046,8 +3375,11 @@ catch (Exception ex)
     Console.WriteLine(ex.Message);
 }
 ```
+
 ### 🔍 Handling Individual Exceptions
+
 You can handle individual exceptions like this:
+
 ```csharp
 try
 {
@@ -3075,6 +3407,7 @@ Error 1
 ```
 
 ### 🧩 Why AggregateException?
+
 When working with asynchronous operations:
 
 1. Multiple tasks can fail independently and concurrently.
@@ -3086,6 +3419,7 @@ When working with asynchronous operations:
 💡 AggregateException.Handle() allows you to filter and selectively handle specific exception types.
 
 ### ⚠️ Important Notes
+
 | Concept                 | Explanation                                                           |
 | ----------------------- | --------------------------------------------------------------------- |
 | **Waits for all tasks** | Even if one task fails early, others continue running.                |
@@ -3095,20 +3429,22 @@ When working with asynchronous operations:
 | **Cancellation**        | If a task is canceled, it’s represented as a `TaskCanceledException`. |
 
 ### 🧾 Summary
+
 1. Task.WhenAll() throws after all tasks complete, even if some fail.
 
 2. It aggregates multiple exceptions into one AggregateException.
 
 3. You can use:
-        
-    1. `InnerExceptions` → to inspect each exception.
+   1. `InnerExceptions` → to inspect each exception.
 
-    2. `Handle()` → to manage exceptions conditionally.
+   2. `Handle()` → to manage exceptions conditionally.
 
 ### ✅ Best Practice Tip:
+
 Always wrap `Task.WhenAll()` inside a try/catch block when tasks might fail independently,and inspect the `AggregateException.InnerExceptions` for detailed error information.
 
 ## 🧾 Summary
+
 | Concept                    | Description                                         |
 | -------------------------- | --------------------------------------------------- |
 | **async / await**          | Enables non-blocking asynchronous programming       |
@@ -3119,24 +3455,30 @@ Always wrap `Task.WhenAll()` inside a try/catch block when tasks might fail inde
 | **Best Practice**          | Avoid `async void` (except for event handlers)      |
 
 # ⚙️ 24. Understanding the State Machine in C#
+
 ## 📘 Overview
+
 In C#, a `state machine` is a compiler-generated construct that allows methods using `async` and `await` to pause and resume execution without blocking a thread.
 
 When you mark a method with `async`, the C# compiler rewrites it into a state machine structure that manages:
+
 - The current execution state
 - The continuation points (after each `await`)
 - The result or exception handling
 
 ## 🧠 Why Do We Need a State Machine?
+
 Asynchronous methods `can pause and resume` execution when awaiting tasks.
 However, normal methods in C# cannot "pause in the middle" of execution.
 
 👉 Therefore, the compiler transforms your async method into a `state machine` that:
+
 - Saves the local variables and current state.
 - Exits when waiting for a task.
 - Resumes from where it left off once the awaited task completes.
 
 ### ✅ Example — Async Method
+
 ```csharp
 using System;
 using System.Threading.Tasks;
@@ -3156,7 +3498,9 @@ class Program
     }
 }
 ```
+
 ### 🔍 What Happens Internally
+
 The C# compiler transforms the `SayHelloAsync()` method into a `state machine` class similar to this (simplified for clarity):
 
 ```csharp
@@ -3201,6 +3545,7 @@ private sealed class SayHelloAsyncStateMachine : IAsyncStateMachine
 ```
 
 ## 🧩 Components of the State Machine
+
 | Component                | Description                                                                    |
 | ------------------------ | ------------------------------------------------------------------------------ |
 | **`IAsyncStateMachine`** | Interface implemented by compiler-generated state machines.                    |
@@ -3210,24 +3555,29 @@ private sealed class SayHelloAsyncStateMachine : IAsyncStateMachine
 | **`MoveNext()`**         | The core method that runs and resumes the async method execution.              |
 
 ## 🔄 Execution Flow
+
 1. The compiler creates an instance of the state machine when the async method is called.
-2. It calls the `MoveNext()` method, starting at _state = -1.
+2. It calls the `MoveNext()` method, starting at \_state = -1.
 3. When an await is encountered:
-    1. The current state is saved.
-    2. Execution returns to the caller.
+   1. The current state is saved.
+   2. Execution returns to the caller.
 4. When the awaited task completes:
-    1. The continuation resumes execution from the saved state.
-    2. The `MoveNext()` method continues from where it left off.
+   1. The continuation resumes execution from the saved state.
+   2. The `MoveNext()` method continues from where it left off.
 5. Finally, `_builder.SetResult()` marks the Task as completed.
 
 ## ⚙️ State Machine Analogy
+
 Imagine you’re reading a book 📖:
+
 - You pause at page 50 (await Task.Delay()).
-- You bookmark that page (_state = 0).
+- You bookmark that page (\_state = 0).
 - You resume reading from page 50 once you’re ready (MoveNext() resumes).
 
 That’s exactly how the async state machine works — it “bookmarks” the point of execution.
+
 ## 🧾 Summary
+
 | Concept            | Description                                                      |
 | ------------------ | ---------------------------------------------------------------- |
 | **Purpose**        | Allows async methods to pause/resume execution without blocking. |
@@ -3238,18 +3588,23 @@ That’s exactly how the async state machine works — it “bookmarks” the po
 | **Continuation**   | Awaits trigger continuation by calling `MoveNext()` again.       |
 
 # ⚙️ 25. Parallel Class in C#
+
 ## 📘 Overview
+
 The `Parallel` class in C# is part of the `System.Threading.Tasks` namespace and provides methods to perform `parallel execution of operations on multiple threads`.
 
 It is mainly used for `data parallelism`, where the same operation is performed on different elements of a collection simultaneously.
 
 ## 🧠 Key Purpose
+
 The `Parallel` class helps you `run independent tasks concurrently` to:
+
 - Improve performance.
 - Utilize multiple CPU cores.
 - Reduce execution time for CPU-bound operations.
 
 ## ✅ Common Methods in Parallel Class
+
 | Method                   | Description                                                 |
 | ------------------------ | ----------------------------------------------------------- |
 | **`Parallel.For()`**     | Executes a loop in which iterations run in parallel.        |
@@ -3257,6 +3612,7 @@ The `Parallel` class helps you `run independent tasks concurrently` to:
 | **`Parallel.Invoke()`**  | Executes multiple independent actions concurrently.         |
 
 ### 🔹 Example 1 — Using Parallel.For()
+
 ```csharp
 using System;
 using System.Threading.Tasks;
@@ -3282,9 +3638,11 @@ Task 5 running on thread 6
 All tasks completed.
 */
 ```
+
 💡 The order is `non-deterministic` — tasks run `concurrently`.
 
 ### 🔹 Example 2 — Using Parallel.ForEach()
+
 ```csharp
 using System;
 using System.Collections.Generic;
@@ -3303,9 +3661,11 @@ class Program
     }
 }
 ```
+
 ✅ Ideal for performing the same operation on each element of a collection concurrently.
 
 ### 🔹 Example 3 — Using Parallel.Invoke()
+
 ```csharp
 using System;
 using System.Threading.Tasks;
@@ -3324,14 +3684,17 @@ class Program
     }
 }
 ```
+
 🔸 Executes multiple independent methods concurrently.
 
 ## ⚙️ How It Works
+
 - The Parallel class uses the ThreadPool internally.
 - It automatically divides the workload across available processor cores.
 - It balances execution dynamically using work-stealing for optimal CPU usage.
 
 ## ⚠️ Important Notes
+
 | Concept                | Description                                                                      |
 | ---------------------- | -------------------------------------------------------------------------------- |
 | **Thread Usage**       | Uses multiple threads from the ThreadPool.                                       |
@@ -3341,6 +3704,7 @@ class Program
 | **Cancellation**       | Can be supported via `ParallelOptions` and `CancellationToken`.                  |
 
 ### 🔹 Example — Using ParallelOptions
+
 ```csharp
 using System;
 using System.Threading;
@@ -3373,7 +3737,9 @@ class Program
     }
 }
 ```
+
 ## 🧾 Summary - Paralle.ForEach
+
 | Feature                | Description                                          |
 | ---------------------- | ---------------------------------------------------- |
 | **Class**              | `System.Threading.Tasks.Parallel`                    |
@@ -3387,13 +3753,16 @@ class Program
 when working with asynchronous operations, you can use `Parallel.ForEachAsync` (introduced in .NET 6) which supports `async delegates`.
 
 ## ⚙️ Syntax
+
 ```csharp
 await Parallel.ForEachAsync(source, async (item, cancellationToken) =>
 {
     await SomeAsyncOperation(item);
 });
 ```
+
 ## 🧠 Key Points
+
 | Feature             | Description                                         |
 | ------------------- | --------------------------------------------------- |
 | **Namespace**       | `System.Threading.Tasks`                            |
@@ -3403,6 +3772,7 @@ await Parallel.ForEachAsync(source, async (item, cancellationToken) =>
 | **Return type**     | `ValueTask` (awaitable)                             |
 
 ## 🧩 Example
+
 ```csharp
 using System;
 using System.Threading.Tasks;
@@ -3434,6 +3804,7 @@ Processed: https://github.com
 All URLs processed!
 */
 ```
+
 (Order may vary since operations run in parallel.)
 
 ## ⚠️ Limitations
@@ -3441,7 +3812,9 @@ All URLs processed!
 - You can’t control max degree of parallelism directly (though you can specify via options).
 - Not suitable for CPU-bound operations — use regular Parallel.For for those.
 - Works only with .NET 6 and later.
+
 ### ⚙️ Example with Options
+
 ```csharp
 var options = new ParallelOptions
 {
@@ -3454,21 +3827,24 @@ await Parallel.ForEachAsync(urls, options, async (url, token) =>
     Console.WriteLine($"Processed with limit: {url}");
 });
 ```
+
 ### Exception Handling in Parallel.Foreach and Parallel.ForEachAsync
 
 `Parallel.ForEachAsync` is **async-first**.  
 When you `await` it, **exceptions are unwrapped**, so you usually see **one exception**, not an `AggregateException`.
 
 This is the same behavior as:
+
 - `await Task.WhenAll(...)`
 - `await any async method`
 
-| API | Exception Behavior |
-|----|-------------------|
-| `Parallel.ForEach` (sync) | ✅ `AggregateException` |
-| `Parallel.ForEachAsync` + `await` | ❌ Single exception |
+| API                               | Exception Behavior      |
+| --------------------------------- | ----------------------- |
+| `Parallel.ForEach` (sync)         | ✅ `AggregateException` |
+| `Parallel.ForEachAsync` + `await` | ❌ Single exception     |
 
 #### Example: Single Exception Observed
+
 ```csharp
 try
 {
@@ -3486,8 +3862,10 @@ catch (Exception ex)
     Console.WriteLine(ex.Message);
 }
 ```
+
 Are Other Exceptions Lost? ❌ No
 They are **stored inside the returned Task**.
+
 ```csharp
 Task task = Parallel.ForEachAsync(items, async (item, ct) =>
 {
@@ -3507,39 +3885,51 @@ catch
     }
 }
 ```
+
 ✔ All exceptions are preserved<br>
 ✔ Just not thrown directly
+
 ## Why .NET Chose This Design
+
 ### Async Philosophy
+
 - throw can only throw one exception
 - Async code should read like sync code
 - AggregateException breaks that illusion
+
 ### Fail-Fast Execution
+
 - `Parallel.ForEachAsync` stops scheduling new work
 - First exception triggers cancellation
 - Remaining iterations may never start
 
 So in many cases, there aren’t multiple exceptions to aggregate
+
 ## 🧾 Summary - Parallel.ForEachAsync
+
 | Concept             | Description                                |
 | ------------------- | ------------------------------------------ |
 | **Method**          | `Parallel.ForEachAsync()`                  |
-| **Supports async?** | ✅ Yes                                      |
+| **Supports async?** | ✅ Yes                                     |
 | **Suitable for**    | I/O-bound async tasks                      |
 | **Return Type**     | `ValueTask`                                |
 | **Introduced in**   | .NET 6                                     |
 | **Advantage**       | Combines parallelism with async efficiency |
 
 # 🧵 26. Multithreading in C#
+
 ## 📘 Overview
+
 `Multithreading` in C# is the ability to `execute multiple threads concurrently within a single process`.<br>
 It allows programs to perform multiple operations at the same time, improving performance and responsiveness—especially in applications with CPU-bound or I/O-bound tasks.
 
 ## ⚙️ What Is a Thread?
+
 A `thread` is the smallest unit of execution within a process.<br>
 Every C# application starts with one main thread, and you can create additional threads to perform tasks concurrently.
 
 ## 🧩 Why Use Multithreading?
+
 | Benefit                | Description                                                                 |
 | ---------------------- | --------------------------------------------------------------------------- |
 | **Concurrency**        | Execute multiple operations at once.                                        |
@@ -3548,6 +3938,7 @@ Every C# application starts with one main thread, and you can create additional 
 | **Separation of Work** | Run independent tasks (like logging, file I/O, or computation) in parallel. |
 
 ## 🧠 Example: Creating and Starting a Thread
+
 ```csharp
 using System;
 using System.Threading;
@@ -3575,7 +3966,9 @@ Worker thread started...
 Worker thread finished.
 */
 ```
+
 ## 🧰 Thread Lifecycle
+
 | State             | Description                                                      |
 | ----------------- | ---------------------------------------------------------------- |
 | **Unstarted**     | Thread created but not yet started.                              |
@@ -3584,6 +3977,7 @@ Worker thread finished.
 | **Stopped**       | Thread has finished execution.                                   |
 
 ## ⚙️ Example: Running Multiple Threads
+
 ```csharp
 for (int i = 1; i <= 3; i++)
 {
@@ -3597,7 +3991,9 @@ for (int i = 1; i <= 3; i++)
     thread.Start();
 }
 ```
+
 ## ⚡ Important Concepts in Multithreading
+
 | Concept               | Description                                                                                            |
 | --------------------- | ------------------------------------------------------------------------------------------------------ |
 | **Thread Pooling**    | Managed threads reused by the .NET runtime (e.g., `ThreadPool.QueueUserWorkItem`).                     |
@@ -3607,6 +4003,7 @@ for (int i = 1; i <= 3; i++)
 | **Context Switching** | Switching CPU execution between threads.                                                               |
 
 ## 🔒 Synchronization Example (Using `lock`)
+
 ```csharp
 class Counter
 {
@@ -3623,7 +4020,9 @@ class Counter
     }
 }
 ```
+
 ## 🚀 Modern Alternatives to Threads
+
 | Technique                | Description                                                                          |
 | ------------------------ | ------------------------------------------------------------------------------------ |
 | **Tasks (`Task` class)** | Higher-level abstraction over threads. Manages scheduling and pooling automatically. |
@@ -3631,6 +4030,7 @@ class Counter
 | **Parallel Class**       | Executes loops or actions concurrently (`Parallel.For`, `Parallel.ForEach`).         |
 
 ## 🧩 Summary
+
 | Feature                | Description                                               |
 | ---------------------- | --------------------------------------------------------- |
 | **What it is**         | Running multiple threads concurrently within one process. |
@@ -3642,7 +4042,9 @@ class Counter
 # CancellationToken in C#
 
 ## 1. What is a CancellationToken?
+
 `CancellationToken` is a mechanism in .NET used to **cooperatively cancel** long-running or asynchronous operations such as:
+
 - `Task`
 - `async/await` methods
 - Parallel operations (`Parallel.ForEach`)
@@ -3654,12 +4056,15 @@ class Counter
 ---
 
 ## 2. Why do we need CancellationToken?
+
 Without cancellation:
+
 - Long-running tasks may waste CPU and memory
 - Applications may become unresponsive
 - Resources may not be released properly
 
 With `CancellationToken`:
+
 - You can stop work early
 - You can clean up resources
 - You can respond quickly to user actions (Cancel button, timeout, shutdown)
@@ -3669,21 +4074,26 @@ With `CancellationToken`:
 ## 3. Core Components
 
 ### 3.1 CancellationTokenSource
+
 - **Creates and controls** the cancellation request
 - Used to signal cancellation
 
 ```csharp
 var cts = new CancellationTokenSource();
 ```
+
 ### 3.2 CancellationToken
 
 Passed to tasks or methods
 
 Used by running code to observe cancellation
+
 ```csharp
 CancellationToken token = cts.Token;
 ```
+
 ## 4. Basic Cancellation Flow
+
 ```csharp
 var cts = new CancellationTokenSource();
 
@@ -3699,10 +4109,12 @@ Task task = Task.Run(() =>
 Thread.Sleep(2000);
 cts.Cancel(); // Request cancellation
 ```
+
 ✔ Cancellation is requested<br>
 ✔ Task checks the token and stops itself
 
 ## 5. Using CancellationToken with async/await
+
 ```csharp
 async Task DoWorkAsync(CancellationToken token)
 {
@@ -3714,22 +4126,29 @@ async Task DoWorkAsync(CancellationToken token)
     }
 }
 ```
+
 ## 6. How to Check for Cancellation
+
 ### 6.1 Using IsCancellationRequested
+
 ```csharp
 if (token.IsCancellationRequested)
 {
     return;
 }
 ```
+
 ### 6.2 Using ThrowIfCancellationRequested (Recommended)
+
 ```csharp
 token.ThrowIfCancellationRequested();
 ```
+
 ✔ Throws OperationCanceledException<br>
 ✔ Clean and standard approach
 
 ## 7. Handling Cancellation Exception
+
 ```csharp
 try
 {
@@ -3740,7 +4159,9 @@ catch (OperationCanceledException)
     Console.WriteLine("Operation was cancelled.");
 }
 ```
+
 ## 8. CancellationToken with Task.Run
+
 ```csharp
 var cts = new CancellationTokenSource();
 
@@ -3750,7 +4171,9 @@ Task task = Task.Run(() =>
     // Work here
 }, cts.Token);
 ```
+
 ## 9. CancellationToken with Task.WhenAll
+
 ```csharp
 var cts = new CancellationTokenSource();
 
@@ -3767,7 +4190,9 @@ catch (OperationCanceledException)
     Console.WriteLine("One or more tasks were cancelled.");
 }
 ```
+
 ## 10. CancellationToken with Parallel.ForEach
+
 ```csharp
 var cts = new CancellationTokenSource();
 
@@ -3791,16 +4216,21 @@ catch (OperationCanceledException)
     Console.WriteLine("Parallel execution cancelled.");
 }
 ```
+
 ## 11. Timeout-based Cancellation
+
 ```csharp
 var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
 await DoWorkAsync(cts.Token);
 ```
+
 ✔ Automatically cancels after 5 seconds
 
 ## 12. Linked Cancellation Tokens
+
 Used when **multiple cancellation sources** should cancel the same operation.
+
 ```csharp
 var cts1 = new CancellationTokenSource();
 var cts2 = new CancellationTokenSource();
@@ -3808,20 +4238,26 @@ var cts2 = new CancellationTokenSource();
 var linkedCts = CancellationTokenSource
     .CreateLinkedTokenSource(cts1.Token, cts2.Token);
 ```
+
 If any source cancels → linked token cancels
+
 # 🧠 Memory Management in C#
+
 ## 📘 Overview
+
 **Memory management** in C# is primarily handled by the **.NET runtime (CLR – Common Language Runtime)**.<br>
 It automatically allocates and frees memory for objects through the **Garbage Collector (GC)**, reducing the risk of memory leaks and dangling pointers that are common in unmanaged languages like C or C++.
 
 ## 🧩 Memory Layout in .NET
+
 C# divides memory mainly into two key areas:
-| Memory Area | Description                                                                                          | Example                      |
+| Memory Area | Description | Example |
 | ----------- | ---------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **Stack**   | Stores **value types**, local variables, and function call data. Managed automatically (LIFO order). | `int a = 10;`                |
-| **Heap**    | Stores **reference types** (objects, arrays, strings). Managed by the **Garbage Collector**.         | `var person = new Person();` |
+| **Stack** | Stores **value types**, local variables, and function call data. Managed automatically (LIFO order). | `int a = 10;` |
+| **Heap** | Stores **reference types** (objects, arrays, strings). Managed by the **Garbage Collector**. | `var person = new Person();` |
 
 ## ⚙️ Example
+
 ```csharp
 class Program
 {
@@ -3839,38 +4275,50 @@ class Person
 }
 
 ```
+
 ### 🧾 Explanation:
+
 - `x` (a value type) lives on the stack.
 - `p` (a reference type) lives on the heap, but its reference (address) is on the stack.
 
 ## 🧹 Garbage Collection (GC)
+
 **Garbage Collection** is an **automatic memory cleanup process** that reclaims memory occupied by objects that are no longer reachable in code.
+
 ### ✅ Key Responsibilities
+
 1. Frees memory of unreferenced objects.
 2. Compacts heap memory to reduce fragmentation.
 3. Optimizes memory allocation efficiency.
 
 ## 🧭 GC Generations
+
 The .NET GC uses a generational model to optimize performance:
-| Generation | Description                                  | Frequency of Collection |
+| Generation | Description | Frequency of Collection |
 | ---------- | -------------------------------------------- | ----------------------- |
-| **Gen 0**  | Newly created short-lived objects.           | Very frequent           |
-| **Gen 1**  | Medium-lived objects promoted from Gen 0.    | Moderate                |
-| **Gen 2**  | Long-lived objects (e.g., static or global). | Least frequent          |
+| **Gen 0** | Newly created short-lived objects. | Very frequent |
+| **Gen 1** | Medium-lived objects promoted from Gen 0. | Moderate |
+| **Gen 2** | Long-lived objects (e.g., static or global). | Least frequent |
 
 ### 🧠 Why Generations?
+
 Most objects die young, so GC focuses more on short-lived objects to reduce overhead.
 
 ## 🔧 Forcing Garbage Collection (Not Recommended)
+
 ```csharp
 GC.Collect();
 GC.WaitForPendingFinalizers();
 ```
+
 #### ⚠️ Use sparingly — forcing GC can hurt performance because the GC runs automatically when needed.
 
 ## 🧱 Finalizers and IDisposable
+
 ### 🧩 Finalizer
+
 A finalizer (also called a destructor) is used to perform cleanup before an object is destroyed.
+
 ```csharp
 class MyClass
 {
@@ -3880,10 +4328,13 @@ class MyClass
     }
 }
 ```
+
 #### ⚠️ You rarely need finalizers. They slow down GC because objects with finalizers require extra processing.
 
 ### 🧰 IDisposable and using
+
 If a class holds unmanaged resources (e.g., file handles, database connections), it should implement `IDisposable`.
+
 ```csharp
 class FileManager : IDisposable
 {
@@ -3913,16 +4364,19 @@ class Program
 }
 
 ```
+
 ✅ `using` statement ensures timely release of unmanaged resources.
 
 ## 🧩 Managed vs Unmanaged Memory
+
 | Type               | Managed                     | Unmanaged                                        |
 | ------------------ | --------------------------- | ------------------------------------------------ |
-| **Handled by GC?** | ✅ Yes                       | ❌ No                                             |
+| **Handled by GC?** | ✅ Yes                      | ❌ No                                            |
 | **Examples**       | C# objects, arrays, strings | File handles, database connections, OS resources |
 | **Cleanup**        | Automatic                   | Manual (via `Dispose()` or `finally`)            |
 
 ### 💡 Best Practices
+
 1. Avoid unnecessary object creation in loops.
 
 2. Use using for disposable resources.
@@ -3934,6 +4388,7 @@ class Program
 5. Keep object references short-lived if possible.
 
 ## 🧾 Summary
+
 | Concept               | Description                                 |
 | --------------------- | ------------------------------------------- |
 | **Memory Areas**      | Stack (value types), Heap (reference types) |
@@ -3944,12 +4399,14 @@ class Program
 | **Unmanaged memory**  | Must be released explicitly                 |
 
 # CSV reader and writer in C#
+
 - Recommended Library: **CsvHelper**
   - ✔ Most popular
   - ✔ Actively maintained
   - ✔ Strong typing & mapping support
 
 ## 🔹 Basic Setup
+
 ```csharp
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -3957,6 +4414,7 @@ using System.Globalization;
 ```
 
 ## 🔹 Step 1: Create a Model (POCO)
+
 ```csharp
 public class User
 {
@@ -3967,16 +4425,19 @@ public class User
 ```
 
 ## 🔹 Step 2: Reading a CSV File
+
 ```csharp
 using var reader = new StreamReader("users.csv");
 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 
 var records = csv.GetRecords<User>().ToList();
 ```
+
 - ✔ Automatically maps columns to properties
 - ✔ Column names must match property names
 
 ## 📥 Read CSV Line by Line (Large Files)
+
 ```csharp
 using var reader = new StreamReader("users.csv");
 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
@@ -3990,6 +4451,7 @@ while (csv.Read())
 ```
 
 ## 🔹 Step 3: Writing Data to a CSV File
+
 ```csharp
 var users = new List<User>
 {
@@ -4007,7 +4469,9 @@ csv.WriteRecords(users);
 - ✔ Creates file if it doesn’t exist
 
 ## 🔹 Step 4: Custom Column Mapping (Best Practice)
+
 - Create a Class Map
+
 ```csharp
 public class UserMap : ClassMap<User>
 {
@@ -4019,7 +4483,9 @@ public class UserMap : ClassMap<User>
     }
 }
 ```
+
 - Use the Map
+
 ```csharp
 using var reader = new StreamReader("users.csv");
 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
@@ -4029,6 +4495,7 @@ var users = csv.GetRecords<User>().ToList();
 ```
 
 ## 🔹 Async Read (Recommended for APIs)
+
 ```csharp
 using var reader = new StreamReader("users.csv");
 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
@@ -4038,3 +4505,275 @@ await foreach (var record in csv.GetRecordsAsync<User>())
     // process record
 }
 ```
+
+# Reflection
+
+## Definition
+
+- Reflection is the ability of a .NET program to inspect its own metadata and dynamically create and invoke types at runtime.
+- Every .NET assembly contains metadata. Reflection allows you to read and use it.
+
+## Why Reflection is Important?
+
+Reflection is used in:
+
+- Dependency Injection containers (like ASP.NET Core built-in DI)
+- ORM frameworks (like Entity Framework)
+- Serialization libraries (like JSON serializers)
+- Unit testing frameworks (xUnit, NUnit)
+- Plugin systems
+- Custom attributes processing
+
+## Core Concepts You Must Know
+
+### 1. Assembly
+
+- An assembly is a compiled .dll or .exe file.
+
+Get current assembly
+
+```csharp
+using System.Reflection;
+
+Assembly assembly = Assembly.GetExecutingAssembly();
+Console.WriteLine(assembly.FullName);
+```
+
+Load an assembly dynamically
+
+```csharp
+Assembly assembly = Assembly.Load("MyLibrary");
+Assembly assembly = Assembly.LoadFrom("path/to/MyLibrary.dll");
+```
+
+### 2. Type
+
+- `Type` represents metadata about a class, interface, struct, enum, etc.
+
+```csharp
+Type type1 = typeof(MyClass);
+Type type2 = obj.GetType();
+Type type3 = Type.GetType("Namespace.MyClass");
+```
+
+#### Important Type Properties
+
+| Property        | Description            |
+| --------------- | ---------------------- |
+| Name            | Class name             |
+| FullName        | Namespace + Class      |
+| IsClass         | Checks if class        |
+| IsInterface     | Checks if interface    |
+| IsAbstract      | Checks abstract        |
+| BaseType        | Parent class           |
+| GetInterfaces() | Implemented interfaces |
+
+### 3. Creating Instance Dynamically
+
+#### Using Activator
+
+```csharp
+Type type = typeof(MyClass);
+object instance = Activator.CreateInstance(type);
+```
+
+#### With parameters:
+
+```csharp
+object instance = Activator.CreateInstance(type, "John", 25);
+```
+
+### 4. Accessing Methods
+
+```csharp
+Type type = typeof(MyClass);
+
+MethodInfo method = type.GetMethod("PrintName");
+
+object instance = Activator.CreateInstance(type);
+
+method.Invoke(instance, null);
+```
+
+#### With parameters:
+
+```csharp
+method.Invoke(instance, new object[] { "Kulabanta" });
+```
+
+### 5. Accessing Properties
+
+```csharp
+PropertyInfo property = type.GetProperty("Name");
+
+property.SetValue(instance, "Kulabanta");
+
+var value = property.GetValue(instance);
+```
+
+### 6. Accessing Fields
+
+```csharp
+FieldInfo field = type.GetField("_age", BindingFlags.NonPublic | BindingFlags.Instance);
+field.SetValue(instance, 30);
+```
+
+### 7. BindingFlags (Very Important in Interviews)
+
+- Reflection does NOT show private members unless specified.
+
+```csharp
+type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+```
+
+#### Common BindingFlags
+
+| Flag         | Meaning                     |
+| ------------ | --------------------------- |
+| Public       | Public members              |
+| NonPublic    | Private/Protected           |
+| Instance     | Instance members            |
+| Static       | Static members              |
+| DeclaredOnly | Only declared in that class |
+
+### 8. Custom Attributes (Very Frequently Asked)
+
+- `check this`
+
+### 9. Reflection and Generics
+
+#### Check if type is generic
+
+```csharp
+type.IsGenericType
+```
+
+#### Get generic arguments
+
+```csharp
+Type[] args = type.GetGenericArguments();
+```
+
+#### Create generic type dynamically
+
+```csharp
+Type listType = typeof(List<>);
+Type constructedType = listType.MakeGenericType(typeof(int));
+
+object listInstance = Activator.CreateInstance(constructedType);
+```
+
+### 10. Performance Considerations (Very Important)
+
+Reflection is:
+
+- Slower than direct method calls
+- Uses metadata lookup
+- Should be avoided in performance-critical loops
+
+Optimization:
+
+- Cache MethodInfo, PropertyInfo
+- Use compiled expressions
+- Use Delegate.CreateDelegate()
+
+## Real-World Use Case Example
+
+Auto-Property Printer
+
+```csharp
+public static void PrintProperties(object obj)
+{
+    Type type = obj.GetType();
+    var properties = type.GetProperties();
+
+    foreach (var prop in properties)
+    {
+        Console.WriteLine($"{prop.Name} : {prop.GetValue(obj)}");
+    }
+}
+```
+
+Used in serializers and logging frameworks.
+
+## Frequently Asked Reflection Interview Questions (With Answers)
+
+### Q1: What is Reflection in C#?
+
+- Reflection allows inspecting metadata of assemblies, types, methods, and properties at runtime and dynamically invoking them.
+
+- It is defined in `System.Reflection`.
+
+### Q2: What is the difference between typeof() and GetType()?
+
+| typeof()               | GetType()        |
+| ---------------------- | ---------------- |
+| Compile-time           | Runtime          |
+| Used with type name    | Used with object |
+| Does not need instance | Needs instance   |
+
+### Q3: What are BindingFlags?
+
+- BindingFlags control visibility and scope of members when using reflection (public, private, static, instance).
+
+### Q4: How do you call a private method using reflection?
+
+```csharp
+MethodInfo method = type.GetMethod(
+    "PrivateMethod",
+    BindingFlags.NonPublic | BindingFlags.Instance
+);
+
+method.Invoke(instance, null);
+```
+
+### Q5: Why is Reflection slow?
+
+Because:
+
+- It performs metadata lookup
+- Uses late binding
+- Cannot be optimized like compile-time calls
+
+### Q6: What is Late Binding?
+
+- Late binding means method resolution happens at runtime instead of compile-time.
+- Reflection uses late binding.
+
+### Q7: What is the difference between dynamic and Reflection?
+
+| dynamic                    | Reflection              |
+| -------------------------- | ----------------------- |
+| Cleaner syntax             | Verbose                 |
+| Resolved at runtime        | Explicit metadata usage |
+| Internally uses reflection | Direct metadata access  |
+
+### Q8: How does Dependency Injection use Reflection?
+
+DI container:
+
+- Scans assemblies
+- Finds constructors
+- Creates instances dynamically
+- Injects dependencies
+
+All using reflection.
+
+### Q9: How can you improve Reflection performance?
+
+- Cache metadata
+- Use delegates
+- Use Expression Trees
+- Avoid in tight loops
+
+### Q10: What is Reflection.Emit?
+
+Reflection.Emit allows creating:
+
+- Dynamic assemblies
+- Types
+- Methods
+- IL code
+- At runtime.
+
+Used in advanced frameworks like proxies and mocking libraries.
