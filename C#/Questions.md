@@ -5223,3 +5223,124 @@ Not allowed:
 | No implementation enforcement | Requires implementation |
 | Passive                       | Active                  |
 
+# Delegate.CreateDelegate()
+- `Delegate.CreateDelegate()` is a powerful method in C# used to dynamically create a delegate at runtime.
+- While you normally create delegates at compile-time using strongly-typed syntax (like Action myAction = MyMethod;), `Delegate.CreateDelegate()` is heavily used when you are working with Reflection and only know about the method you want to execute at runtime.
+
+## Why use Delegate.CreateDelegate()? (The Performance Factor)
+- When you use Reflection to find a method at runtime, you get a MethodInfo object. You can execute that method using `MethodInfo.Invoke()`. However, `MethodInfo.Invoke()` is famously slow because it requires type checking, security checks, and boxing/unboxing of arguments every single time it runs.
+- If you need to call a reflected method multiple times in a loop or a high-performance scenario, `MethodInfo.Invoke()` will bottleneck your application.
+- **The Solution**: You use `Delegate.CreateDelegate()` to convert that sluggish MethodInfo into a strongly-typed delegate (like Func or Action). Once created, invoking the delegate is nearly as fast as calling the method directly!
+
+## Common Ways to Use It
+### Scenario A: Binding to a Static Method
+- For a static method, you only need the type of the delegate you want to create and the `MethodInfo` of the target method.
+```csharp
+using System;
+using System.Reflection;
+
+public class Program
+{
+    public static void Main()
+    {
+        // 1. Get the MethodInfo via Reflection (e.g., Math.Abs)
+        MethodInfo methodInfo = typeof(Math).GetMethod("Abs", new[] { typeof(int) });
+
+        // 2. Create the delegate. 
+        // We cast it to Func<int, int> because it takes an int and returns an int.
+        var absDelegate = (Func<int, int>)Delegate.CreateDelegate(typeof(Func<int, int>), methodInfo);
+
+        // 3. Invoke the delegate (extremely fast!)
+        int result = absDelegate(-42); 
+        Console.WriteLine(result); // Output: 42
+    }
+}
+```
+### Scenario B: Binding to an Instance Method (Closed Delegate)
+- If the method belongs to an object instance, you must pass that specific object instance (the "target") into CreateDelegate().
+
+```csharp
+using System;
+using System.Reflection;
+
+public class Greeter
+{
+    public string SayHello(string name) => $"Hello, {name}!";
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        // 1. We have an instance of an object
+        Greeter myGreeter = new Greeter();
+
+        // 2. Get the MethodInfo
+        MethodInfo methodInfo = typeof(Greeter).GetMethod("SayHello");
+
+        // 3. Create the delegate, binding it to 'myGreeter'
+        var helloDelegate = (Func<string, string>)Delegate.CreateDelegate(
+            typeof(Func<string, string>), 
+            myGreeter,    // The specific object instance
+            methodInfo    // The method to run
+        );
+
+        // 4. Invoke it
+        Console.WriteLine(helloDelegate("Alice")); // Output: Hello, Alice!
+    }
+}
+```
+### Scenario C: Binding to an Instance Method (Opened Delegate)
+- An `open delegate` is not bound to an instance. Interestingly, you can create an open delegate for an instance method by making the first parameter of your delegate the instance type itself (e.g., Func<Greeter, string, string>).
+
+Let's create a simple `Employee` class and dynamically invoke its `GetDetails` method across multiple different instances.
+```csharp
+using System;
+using System.Reflection;
+
+public class Employee
+{
+    public string Name { get; set; }
+
+    public Employee(string name)
+    {
+        Name = name;
+    }
+
+    // This is the instance method we want to call
+    public string GetDetails(string prefix)
+    {
+        return $"{prefix}: {Name}";
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        // 1. Get the MethodInfo for the instance method
+        MethodInfo methodInfo = typeof(Employee).GetMethod("GetDetails");
+
+        // 2. Create the OPEN delegate. 
+        // Notice the type is Func<Employee, string, string>
+        // We use the CreateDelegate overload that ONLY takes the delegate type and MethodInfo.
+        var openDelegate = (Func<Employee, string, string>)Delegate.CreateDelegate(
+            typeof(Func<Employee, string, string>), 
+            methodInfo
+        );
+
+        // 3. Create a few different object instances
+        Employee emp1 = new Employee("Alice");
+        Employee emp2 = new Employee("Bob");
+
+        // 4. Invoke the delegate! 
+        // We must pass the instance (emp1 or emp2) as the first argument.
+        Console.WriteLine(openDelegate(emp1, "Manager"));   // Output: Manager: Alice
+        Console.WriteLine(openDelegate(emp2, "Developer")); // Output: Developer: Bob
+    }
+}
+```
+#### Key rules
+- **Strict Signature Matching**: The delegate type you pass in (e.g., typeof(Func<string, string>)) must exactly match the signature of the MethodInfo. If the parameters or return types don't align perfectly, it will throw an `ArgumentException` at runtime.
+
+- **Return Type Casting**: `Delegate.CreateDelegate()` returns a base `System.Delegate` object. You must explicitly cast it to your specific delegate type (like (Action) or (Func<int, bool>)) before you can invoke it cleanly.
