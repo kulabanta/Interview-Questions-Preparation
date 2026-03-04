@@ -4636,6 +4636,8 @@ type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Inst
 | Static       | Static members              |
 | DeclaredOnly | Only declared in that class |
 
+- Type.GetMethods() (Any method where BindingFlags are used ) with BindingFlags may not return any methods primarily because the BindingFlags argument must include both a `scope` flag (`Instance` or `Static`) and an `accessibility` flag (`Public` or `NonPublic`). If you only specify one set of flags (e.g., just BindingFlags.Public), an empty array is returned.
+
 ### 8. Custom Attributes (Very Frequently Asked)
 
 - `check this`
@@ -4742,22 +4744,119 @@ Because:
 
 ### Q7: What is the difference between dynamic and Reflection?
 
-| dynamic                    | Reflection              |
-| -------------------------- | ----------------------- |
-| Cleaner syntax             | Verbose                 |
-| Resolved at runtime        | Explicit metadata usage |
-| Internally uses reflection | Direct metadata access  |
+| Feature                | `dynamic`              | Reflection                         |
+| ---------------------- | ---------------------- | ---------------------------------- |
+| Type Checking          | Runtime                | Runtime                            |
+| Syntax                 | Simple and clean       | Verbose and complex                |
+| Performance            | Faster than reflection | Slower                             |
+| Metadata Access        | ❌ No                  | ✅ Yes                             |
+| Access Private Members | ❌ No                  | ✅ Yes                             |
+| Primary Purpose        | Late binding           | Metadata inspection & manipulation |
+| Namespace              | Built-in keyword       | `System.Reflection`                |
 
 ### Q8: How does Dependency Injection use Reflection?
 
-DI container:
+In .NET (especially in ASP.NET Core), the built-in DI container uses Reflection to:
+1. Discover constructors
+2. Inspect constructor parameters
+3. Create object instances dynamically
+4. Resolve dependencies recursively
 
-- Scans assemblies
-- Finds constructors
-- Creates instances dynamically
-- Injects dependencies
+##### Basic Example
+```csharp
+public interface IMessageService
+{
+    void Send();
+}
 
-All using reflection.
+public class EmailService : IMessageService
+{
+    public void Send()
+    {
+        Console.WriteLine("Email sent");
+    }
+}
+
+public class OrderService
+{
+    private readonly IMessageService _messageService;
+
+    public OrderService(IMessageService messageService)
+    {
+        _messageService = messageService;
+
+    }
+}
+```
+Registration:
+```csharp
+builder.Services.AddScoped<IMessageService, EmailService>();
+builder.Services.AddScoped<OrderService>();
+```
+When OrderService is requested, DI container must:
+- Create `OrderService`
+- Inject `IMessageService`
+- Which means create `EmailService`
+
+##### Where Reflection Is Used in DI
+###### 1. Finding the Constructor
+```csharp
+var constructors = typeof(OrderService).GetConstructors();
+```
+- It selects the appropriate constructor (usually the one with most parameters).
+
+###### 2. Inspecting Constructor Parameters
+```csharp
+var parameters = constructor.GetParameters();
+```
+For OrderService, it finds:
+```csharp 
+IMessageService messageService
+```
+###### 3. Resolving Each Parameter Type
+```
+IMessageService → EmailService
+```
+Then it recursively creates:
+```csharp
+Activator.CreateInstance(typeof(EmailService));
+```
+This also uses reflection.
+
+###### 4. Creating the Final Object
+After resolving all parameters:
+```csharp
+Activator.CreateInstance(typeof(OrderService), emailServiceInstance);
+```
+Reflection creates the object dynamically at runtime.
+
+When you call:
+```csharp
+var service = serviceProvider.GetService<OrderService>();
+```
+Internally:
+```
+1. Get type OrderService
+2. Use reflection to get constructor
+3. Get constructor parameters
+4. For each parameter:
+      Resolve dependency recursively
+5. Create instance using Activator.CreateInstance()
+6. Return instance
+```
+##### Does DI Always Use Reflection?
+✅ During first resolution → YES
+
+The container uses reflection to:
+- Build object creation logic
+- Analyze constructors
+
+⚡ After that → Mostly NO
+
+Modern .NET DI container:
+- Builds an expression tree
+- Compiles it into a delegate
+- Caches it
 
 ### Q9: How can you improve Reflection performance?
 
@@ -4777,3 +4876,350 @@ Reflection.Emit allows creating:
 - At runtime.
 
 Used in advanced frameworks like proxies and mocking libraries.
+
+# Late Binding
+- `Late binding` means that the method or property to be invoked is determined at runtime, not at compile time.
+
+## 🔹 Early Binding vs Late Binding
+| Feature       | Early Binding      | Late Binding         |
+| ------------- | ------------------ | -------------------- |
+| Decision time | Compile time       | Runtime              |
+| Performance   | Faster             | Slightly slower      |
+| Type safety   | Strong             | Less safe            |
+| Example       | Normal method call | Reflection / dynamic |
+
+
+Late binding mainly occurs using:
+1. Reflection
+2. dynamic keyword
+3. COM objects
+
+### Late Binding using Reflection
+```csharp
+using System;
+using System.Reflection;
+
+class Person
+{
+    public void SayHello()
+    {
+        Console.WriteLine("Hello");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Type type = typeof(Person);
+        object obj = Activator.CreateInstance(type);
+
+        MethodInfo method = type.GetMethod("SayHello");
+        method.Invoke(obj, null);
+    }
+}
+```
+**What happens here?**
+
+- Compiler does NOT know which method will be called.
+- At runtime:
+    - We find the method by name.
+    - Then invoke it dynamically.
+
+👉 This is late binding.
+
+### 2️⃣ Late Binding using dynamic
+When you use dynamic:
+1. Type checking happens at runtime
+2. Method resolution happens at runtime
+
+```csharp
+dynamic obj = "Hello";
+Console.WriteLine(obj.Length);
+```
+
+Here:
+- Compiler does not check whether Length exists.
+- At runtime, CLR resolves it.
+
+If the member doesn't exist → runtime exception.
+
+### 🔹 Real-World Use Cases
+Late binding is commonly used in:
+- Plugin systems
+- Dependency Injection containers
+- ORMs (like Entity Framework)
+- Serialization frameworks
+- COM interop
+- Testing frameworks
+
+### 🔹 How Late Binding Works Internally
+
+At runtime:
+1. CLR loads metadata of the type
+2. Looks up the member (method/property)
+3. Performs security checks
+4. Invokes using reflection or dynamic dispatch
+
+Because of these extra steps, it is slower than early binding.
+
+# Reflection.Emit in C#
+- Reflection.Emit is a feature in .NET that allows you to generate assemblies, types, and methods dynamically at runtime.
+-  It is part of the `System.Reflection.Emit` namespace.
+
+In simple words:
+- Reflection = Inspect metadata
+- Reflection.Emit = Create new metadata + IL code at runtime
+
+**Normally:**
+- You write C# code
+- Compiler converts it to IL
+- CLR executes it<br>
+
+**But with `Reflection.Emit`:**
+- You generate IL code yourself at runtime
+- CLR compiles and executes it immediately
+
+Reflection.Emit is used internally by:
+1. Dynamic proxy libraries
+2. Mocking frameworks
+3. Dependency Injection containers
+4. ORMs
+5. Expression tree compilation
+6. Some serializers
+
+For example:
+1. Castle DynamicProxy
+2. Moq
+3. Entity Framework
+
+## 🔹 Main Classes in Reflection.Emit
+| Class             | Purpose                 |
+| ----------------- | ----------------------- |
+| `AssemblyBuilder` | Create dynamic assembly |
+| `ModuleBuilder`   | Create module           |
+| `TypeBuilder`     | Create type             |
+| `MethodBuilder`   | Create method           |
+| `ILGenerator`     | Emit IL instructions    |
+
+## 🔹 Basic Flow
+1. Create dynamic assembly
+2. Create module
+3. Create type
+4. Define method
+5. Emit IL instructions
+6. Create type
+7. Invoke method
+
+## 🔹 Simple Example
+
+Let’s dynamically create a class with a method that prints "Hello".
+```csharp
+using System;
+using System.Reflection;
+using System.Reflection.Emit;
+
+class Program
+{
+    static void Main()
+    {
+        var assemblyName = new AssemblyName("DynamicAssembly");
+        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(
+            assemblyName,
+            AssemblyBuilderAccess.Run);
+
+        var moduleBuilder = assemblyBuilder.DefineDynamicModule("MainModule");
+
+        var typeBuilder = moduleBuilder.DefineType(
+            "MyDynamicType",
+            TypeAttributes.Public);
+
+        var methodBuilder = typeBuilder.DefineMethod(
+            "SayHello",
+            MethodAttributes.Public,
+            typeof(void),
+            null);
+
+        var il = methodBuilder.GetILGenerator();
+
+        il.Emit(OpCodes.Ldstr, "Hello from Dynamic Type!");
+        il.Emit(OpCodes.Call, typeof(Console)
+            .GetMethod("WriteLine", new[] { typeof(string) }));
+        il.Emit(OpCodes.Ret);
+
+        var dynamicType = typeBuilder.CreateType();
+        var instance = Activator.CreateInstance(dynamicType);
+        dynamicType.GetMethod("SayHello").Invoke(instance, null);
+    }
+}
+```
+What Is Happening Internally?
+1. You are manually writing IL instructions.
+2. CLR JIT compiles that IL.
+3. It behaves like a normal compiled class.
+
+## 🔹 Reflection vs Reflection.Emit
+| Feature              | Reflection             | Reflection.Emit            |
+| -------------------- | ---------------------- | -------------------------- |
+| Purpose              | Inspect existing types | Create new types           |
+| Modify existing type | ❌ No                   | ❌ No                       |
+| Create new type      | ❌ No                   | ✅ Yes                      |
+| Performance          | Slower (Invoke)        | Very fast after generation |
+
+## 🔹 Performance Perspective (Interview Insight)
+- Reflection.Invoke → slow (boxing, metadata lookup)
+- Reflection.Emit → faster because:
+    - Code is generated once
+    - Then normal execution
+
+# Attributes
+An attribute is a class that inherits from System.Attribute. They allow you to add declarative information to your programs.
+
+- **Metadata**: Information about the code, stored in the assembly.
+- **Reflection**: The primary way to read attributes at runtime.
+- **Syntax**: Square brackets [AttributeName] placed above the target.
+
+## Common Built-in Attributes
+| Scenario              | Attribute      |
+| --------------------- | -------------- |
+| Model validation      | `[Required]`   |
+| Routing               | `[HttpGet]`    |
+| Authorization         | `[Authorize]`  |
+| Serialization control | `[JsonIgnore]` |
+| Mark obsolete code    | `[Obsolete]`   |
+
+- Attributes help frameworks understand how your code should behave.
+- Without attributes, frameworks would require complex configuration files.
+
+## Basic Syntax of Attributes
+```csharp
+[AttributeName]
+public class MyClass
+{
+}
+```
+If the attribute class is MyCustomAttribute, you can use:
+```csharp
+[MyCustom]
+```
+👉 The word `Attribute` is optional while using it.
+
+## AttributeUsage (Very Important)
+Controls:
+- Where attribute can be applied
+- Whether multiple allowed
+- Whether inherited
+```csharp
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method,
+                AllowMultiple = true,
+                Inherited = true)]
+```
+## Custom Attributes
+1. Steps to create one:
+    - Create a class that inherits from System.Attribute.
+    - (Optional) Use [AttributeUsage] to restrict where the attribute can be applied.
+    - Define a constructor and properties.
+```csharp
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+public class DeveloperInfoAttribute : Attribute
+{
+    public string Name { get; }
+    public string Version { get; set; }
+
+    public DeveloperInfoAttribute(string name)
+    {
+        Name = name;
+    }
+}
+```
+2. Reading Attributes via Reflection
+    - Attributes are useless if nothing reads them. In interviews, you should mention that you use `Reflection` to inspect attributes at runtime.
+
+```csharp
+var type = typeof(MyClass);
+var attributes = type.GetCustomAttributes(typeof(DeveloperInfoAttribute), false);
+
+foreach (DeveloperInfoAttribute attr in attributes)
+{
+    Console.WriteLine($"Developer: {attr.Name}");
+}
+```
+
+## How Attributes Work Internally
+Important interview concept:
+- Attributes do NOT execute by themselves.
+- They just add metadata to assembly.
+- CLR stores them in metadata.
+- Frameworks read them using Reflection.
+- Then behavior changes.
+
+```
+Attributes are passive.
+Reflection makes them active.
+```
+
+## Positional vs Named Parameters
+### Positional (Constructor)
+```csharp
+[Developer("John")]
+```
+### Named (Property)
+```csharp
+public class DeveloperAttribute : Attribute
+{
+    public string Name { get; }
+    public string Role { get; set; }
+
+    public DeveloperAttribute(string name)
+    {
+        Name = name;
+    }
+}
+
+[Developer("John", Role = "Backend")]
+```
+
+## Key Interview Questions & "Gotchas"
+### Q: What is the difference between a Parameter and an Attribute?
+**Answer:** A parameter is data passed into a method to change its execution logic. An attribute is metadata attached to the code structure itself to provide info to the compiler or external tools.
+
+### Q: What does [AttributeUsage] do?
+**Answer:** It acts as "meta-metadata." It allows you to specify:
+- `AttributeTargets`: (Class,Method,Property,Field,Parameter,Assembly,Interface,Constructor). 
+- `AllowMultiple`: Whether the same attribute can be applied more than once to a single element.
+- `Inherited`: Whether derived classes inherit the attribute.
+
+### Q: Why use Attributes instead of just adding a property to a class?
+**Answer**: Attributes decouple the metadata from the instance. You can check an attribute without ever instantiating the class. This is vital for frameworks like Entity Framework (to map tables) or nUnit (to identify test methods).
+
+### Q: Can you pass complex objects (like a custom class instance) into an attribute constructor?
+**Answer**: No. Attribute parameters must be compile-time constants. You can only use primitive types (int, string, bool), Type objects, and enums.
+
+Allowed types:
+- Primitive types
+- string
+- Type
+- enum
+- object
+- Arrays of above types 
+
+Not allowed:
+- Complex objects
+- Non-constant values
+
+### Q: Do attributes execute automatically?
+**Answer** : No. They are metadata. Reflection or framework must read them.
+
+### Q: Can we modify behavior using attributes?
+**Answer**: Yes, but only when combined with:
+- Reflection
+- A framework
+- Middleware
+
+### Q: Difference between Attribute and Interface?
+| Attribute                     | Interface               |
+| ----------------------------- | ----------------------- |
+| Metadata                      | Behavior contract       |
+| No implementation enforcement | Requires implementation |
+| Passive                       | Active                  |
+
