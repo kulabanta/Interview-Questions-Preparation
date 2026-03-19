@@ -690,3 +690,189 @@ export class DashboardComponent {}
 2. **Scoped Services** : Different components can have different service instances.
 3. **Encapsulation** : Child components can use private services.
 4. **Better Testing** : Dependencies can be easily mocked or replaced.
+
+ # Property Decorators in Angular
+- property decorators are used to attach metadata to class properties. Angular uses this metadata to understand how components communicate, bind data, and interact with templates.
+- Property decorators are functions applied to class properties using the @ symbol.
+
+## 🔷 Common Property Decorators in Angular
+### 1. @Input()
+- Used to receive data from parent → child component
+```typescript
+// child.component.ts
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'app-child',
+  template: `<p>{{ name }}</p>`
+})
+export class ChildComponent {
+  @Input() name: string;
+}
+```
+```HTML
+<!-- parent.component.html -->
+<app-child [name]="'Angular'"></app-child>
+```
+
+#### Key Points
+- Enables data binding from parent
+- Works with property binding [ ]
+- Supports change detection
+
+### 2. @Output()
+- Used to send data from child → parent component
+```typescript
+import { Component, Output, EventEmitter } from '@angular/core';
+
+@Component({
+  selector: 'app-child',
+  template: `<button (click)="sendData()">Click</button>`
+})
+export class ChildComponent {
+  @Output() notify = new EventEmitter<string>();
+
+  sendData() {
+    this.notify.emit('Hello Parent');
+  }
+}
+```
+```HTML
+<!-- parent.component.html -->
+<app-child (notify)="handleEvent($event)"></app-child>
+```
+
+### 3. @ViewChild()
+- Used to access child component, directive, or DOM element inside the same template
+```typescript
+import { Component, ViewChild, ElementRef } from '@angular/core';
+
+@Component({
+  template: `<input #inputBox />`
+})
+export class AppComponent {
+  @ViewChild('inputBox') input!: ElementRef;
+
+  ngAfterViewInit() {
+    console.log(this.input.nativeElement.value);
+  }
+}
+```
+#### Key Points
+- Access happens after ngAfterViewInit
+- Used for DOM manipulation or child interaction
+
+### 4. @ViewChildren()
+- Used to access multiple child elements/components
+```typescript
+@ViewChildren('items') items: QueryList<any>;
+```
+### 5. @ContentChild()
+- Used to access projected content (ng-content)
+```typescript
+@ContentChild('projected') content: ElementRef;
+```
+#### Key Points
+- Works with `<ng-content>`
+- Access in ngAfterContentInit
+
+### 6. @ContentChildren()
+- Used to access multiple projected elements
+```typescript
+@ContentChildren(ItemComponent) items: QueryList<ItemComponent>;
+```
+
+### 7. @HostBinding()
+#### 🔷 What is a Host Element?
+- The host element is the DOM element that uses your directive/component.
+
+```HTML
+<button appHighlight>Click Me</button>
+```
+👉 Here, `<button>` is the host element
+
+- Binds a property in your class to a property/attribute/style/class of the host element
+```typescript
+import { Directive, HostBinding } from '@angular/core';
+
+@Directive({
+  selector: '[appHighlight]'
+})
+export class HighlightDirective {
+
+  @HostBinding('style.backgroundColor') bgColor = 'yellow';
+
+}
+```
+```HTML
+<button appHighlight style="background-color: yellow;">Click Me</button>
+```
+#### 🔹 How it works
+- Angular links bgColor → host element style
+- When bgColor changes → DOM updates automatically
+
+#### Bind class
+```typescript
+@HostBinding('class.active') isActive = true;
+```
+### Bind Attribute
+```typescript
+@HostBinding('attr.disabled') isDisabled = true;
+```
+
+#### 🔹 Key Use Cases
+1. Dynamic styling
+2. Adding/removing classes
+3. Setting attributes
+
+### 8. @HostListener
+- Listens to events on the host element
+```typescript
+import { Directive, HostListener } from '@angular/core';
+
+@Directive({
+  selector: '[appClick]'
+})
+export class ClickDirective {
+
+  @HostListener('click')
+  onClick() {
+    console.log('Button clicked!');
+  }
+
+}
+```
+#### with event data
+```typescript
+@HostListener('click', ['$event'])
+onClick(event: MouseEvent) {
+  console.log(event.target);
+}
+```
+#### Listen to other events
+```typescript
+@HostListener('mouseenter')
+onMouseEnter() {
+  console.log('Mouse entered');
+}
+
+@HostListener('mouseleave')
+onMouseLeave() {
+  console.log('Mouse left');
+}
+```
+
+#### Listen to global events
+```typescript
+@HostListener('window:resize', ['$event'])
+onResize(event: Event) {
+  console.log('Window resized');
+}
+```
+#### key differences
+| Feature    | `@HostBinding`                      | `@HostListener`           |
+| ---------- | ----------------------------------- | ------------------------- |
+| Purpose    | Bind property to host               | Listen to host events     |
+| Works with | DOM properties (style, class, attr) | DOM events (click, hover) |
+| Direction  | Class → DOM                         | DOM → Class               |
+| Use case   | Styling, attributes                 | Event handling            |
