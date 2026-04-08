@@ -5344,3 +5344,358 @@ public class Program
 - **Strict Signature Matching**: The delegate type you pass in (e.g., typeof(Func<string, string>)) must exactly match the signature of the MethodInfo. If the parameters or return types don't align perfectly, it will throw an `ArgumentException` at runtime.
 
 - **Return Type Casting**: `Delegate.CreateDelegate()` returns a base `System.Delegate` object. You must explicitly cast it to your specific delegate type (like (Action) or (Func<int, bool>)) before you can invoke it cleanly.
+
+# Background Services & Hosted Services in .NET
+
+---
+
+## 1. What is a Hosted Service?
+
+A **Hosted Service** is any class that implements the `IHostedService` interface. It is managed by .NET's **Generic Host** (`IHost`), which controls its lifetime — starting it when the app starts and stopping it when the app shuts down.
+
+### `IHostedService` Interface
+
+```csharp
+public interface IHostedService
+{
+    Task StartAsync(CancellationToken cancellationToken);
+    Task StopAsync(CancellationToken cancellationToken);
+}
+```
+
+| Method | When it's called |
+|---|---|
+| `StartAsync` | When the application host starts |
+| `StopAsync` | When the application host is shutting down |
+
+### Example — Simple Hosted Service
+
+```csharp
+public class GreeterHostedService : IHostedService
+{
+    private readonly ILogger<GreeterHostedService> _logger;
+
+    public GreeterHostedService(ILogger<GreeterHostedService> logger)
+    {
+        _logger = logger;
+    }
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("✅ GreeterHostedService started at {time}", DateTimeOffset.Now);
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("🛑 GreeterHostedService stopped at {time}", DateTimeOffset.Now);
+        return Task.CompletedTask;
+    }
+}
+```
+
+### Registering a Hosted Service
+
+```csharp
+// Program.cs
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHostedService<GreeterHostedService>();
+
+var app = builder.Build();
+app.Run();
+```
+
+> **When to use `IHostedService` directly:**
+> Use it for simple startup/shutdown tasks — like warming up a cache, running a migration, or opening a connection.
+
+---
+
+## 2. What is a Background Service?
+
+`BackgroundService` is an **abstract base class** that implements `IHostedService` and is designed for **long-running background tasks**. Instead of implementing `StartAsync`/`StopAsync` yourself, you only override one method:
+
+```csharp
+protected abstract Task ExecuteAsync(CancellationToken stoppingToken);
+```
+
+The host calls `ExecuteAsync` in the background and passes a `CancellationToken` that is triggered when the app is shutting down.
+
+### `BackgroundService` Internals (simplified)
+
+```csharp
+public abstract class BackgroundService : IHostedService, IDisposable
+{
+    private Task _executingTask;
+    private CancellationTokenSource _cts;
+
+    public virtual Task StartAsync(CancellationToken cancellationToken)
+    {
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _executingTask = ExecuteAsync(_cts.Token);  // Fire and forget
+        return _executingTask.IsCompleted ? _executingTask : Task.CompletedTask;
+    }
+
+    protected abstract Task ExecuteAsync(CancellationToken stoppingToken);
+
+    public virtual async Task StopAsync(CancellationToken cancellationToken)
+    {
+        _cts.Cancel();
+        await Task.WhenAny(_executingTask, Task.Delay(Timeout.Infinite, cancellationToken));
+    }
+}
+```
+
+---
+
+## 3. Background Service Examples
+
+### Example 1 — Periodic Task (runs every N seconds)
+
+A common pattern: do some work, wait, repeat — until the app shuts down.
+
+```csharp
+public class HeartbeatService : BackgroundService
+{
+    private readonly ILogger<HeartbeatService> _logger;
+
+    public HeartbeatService(ILogger<HeartbeatService> logger)
+    {
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("HeartbeatService started.");
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            _logger.LogInformation("💓 Heartbeat at {time}", DateTimeOffset.Now);
+
+            // Wait 5 seconds before next heartbeat
+            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+        }
+
+        _logger.LogInformation("HeartbeatService stopping.");
+    }
+}
+```
+
+---
+
+### Example 2 — Database Cleanup Service (scoped dependencies)
+
+> ⚠️ **Important:** `BackgroundService` is a **singleton**. You cannot inject **scoped** services (like `DbContext`) directly. Use `IServiceScopeFactory` to create a scope manually.
+
+```csharp
+public class DatabaseCleanupService : BackgroundService
+{
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<DatabaseCleanupService> _logger;
+
+    public DatabaseCleanupService(
+        IServiceScopeFactory scopeFactory,
+        ILogger<DatabaseCleanupService> logger)
+    {
+        _scopeFactory = scopeFactory;
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            // Wait until midnight before running
+            await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
+
+            using var scope = _scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var cutoff = DateTime.UtcNow.AddDays(-30);
+            var oldLogs = dbContext.Logs.Where(l => l.CreatedAt < cutoff);
+
+            dbContext.Logs.RemoveRange(oldLogs);
+            await dbContext.SaveChangesAsync(stoppingToken);
+
+            _logger.LogInformation("🧹 Old logs cleaned up at {time}", DateTimeOffset.Now);
+        }
+    }
+}
+```
+
+---
+
+### Example 3 — Queue Processor (channel-based producer/consumer)
+
+Process items from a queue as they arrive, instead of polling on a timer.
+
+```csharp
+// The shared queue
+public class BackgroundTaskQueue
+{
+    private readonly Channel<Func<CancellationToken, ValueTask>> _queue;
+
+    public BackgroundTaskQueue(int capacity = 100)
+    {
+        _queue = Channel.CreateBounded<Func<CancellationToken, ValueTask>>(capacity);
+    }
+
+    public async ValueTask EnqueueAsync(Func<CancellationToken, ValueTask> workItem)
+    {
+        await _queue.Writer.WriteAsync(workItem);
+    }
+
+    public async ValueTask<Func<CancellationToken, ValueTask>> DequeueAsync(CancellationToken ct)
+    {
+        return await _queue.Reader.ReadAsync(ct);
+    }
+}
+
+// The background worker
+public class QueuedWorkerService : BackgroundService
+{
+    private readonly BackgroundTaskQueue _taskQueue;
+    private readonly ILogger<QueuedWorkerService> _logger;
+
+    public QueuedWorkerService(BackgroundTaskQueue taskQueue, ILogger<QueuedWorkerService> logger)
+    {
+        _taskQueue = taskQueue;
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("Queue worker started.");
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            var workItem = await _taskQueue.DequeueAsync(stoppingToken);
+
+            try
+            {
+                await workItem(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing work item.");
+            }
+        }
+    }
+}
+
+// Registration
+builder.Services.AddSingleton<BackgroundTaskQueue>();
+builder.Services.AddHostedService<QueuedWorkerService>();
+
+// Enqueue work from a controller
+public class OrderController : ControllerBase
+{
+    private readonly BackgroundTaskQueue _queue;
+
+    public OrderController(BackgroundTaskQueue queue) => _queue = queue;
+
+    [HttpPost("place")]
+    public async Task<IActionResult> PlaceOrder([FromBody] Order order)
+    {
+        // Respond immediately, process in background
+        await _queue.EnqueueAsync(async ct =>
+        {
+            await Task.Delay(500, ct); // simulate processing
+            Console.WriteLine($"Order {order.Id} processed.");
+        });
+
+        return Accepted();
+    }
+}
+```
+
+---
+
+## 4. IHostedService vs BackgroundService
+
+| | `IHostedService` | `BackgroundService` |
+|---|---|---|
+| **Type** | Interface | Abstract class (implements `IHostedService`) |
+| **Override** | `StartAsync` + `StopAsync` | Only `ExecuteAsync` |
+| **Best for** | One-time startup/shutdown logic | Long-running loops |
+| **Cancellation** | Manual | Built-in via `stoppingToken` |
+| **Complexity** | More control, more code | Simpler, less boilerplate |
+
+---
+
+## 5. Graceful Shutdown
+
+When the app shuts down, the host:
+1. Signals the `CancellationToken` (`stoppingToken.IsCancellationRequested = true`)
+2. Waits for `ExecuteAsync` to finish (up to the shutdown timeout)
+
+Always **respect the cancellation token** to ensure clean shutdowns:
+
+```csharp
+// ✅ Good — passes token to delay, exits the loop on cancellation
+await Task.Delay(5000, stoppingToken);
+
+// ❌ Bad — ignores cancellation, blocks shutdown for 5 seconds
+await Task.Delay(5000);
+```
+
+You can configure the shutdown timeout in `Program.cs`:
+
+```csharp
+builder.Services.Configure<HostOptions>(options =>
+{
+    options.ShutdownTimeout = TimeSpan.FromSeconds(30);
+});
+```
+
+---
+
+## 6. Error Handling in BackgroundService
+
+If `ExecuteAsync` throws an unhandled exception, the host stops by default in .NET 6+. Always wrap your loop body in a `try/catch`:
+
+```csharp
+protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+{
+    while (!stoppingToken.IsCancellationRequested)
+    {
+        try
+        {
+            await DoWorkAsync(stoppingToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal shutdown — don't log as error
+            break;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error in background service.");
+            // Optionally wait before retrying
+            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+        }
+    }
+}
+```
+
+---
+
+## 7. Summary
+
+```
+App Starts
+    │
+    └──► IHost calls StartAsync() on all IHostedService registrations
+              │
+              ├── IHostedService  →  You control StartAsync/StopAsync fully
+              │
+              └── BackgroundService  →  Override ExecuteAsync() with your loop
+                        │
+                        ├── Periodic Task     (Task.Delay in a while loop)
+                        ├── Queue Processor   (Channel / Queue)
+                        └── Event Driven      (wait on signal/semaphore)
+
+App Stops
+    │
+    └──► CancellationToken is triggered → ExecuteAsync exits → StopAsync completes
+```

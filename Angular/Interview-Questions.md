@@ -876,3 +876,226 @@ onResize(event: Event) {
 | Works with | DOM properties (style, class, attr) | DOM events (click, hover) |
 | Direction  | Class → DOM                         | DOM → Class               |
 | Use case   | Styling, attributes                 | Event handling            |
+# View Encapsulation in Angular
+- `View Encapsulation` in Angular controls how styles defined in a component affect the DOM—whether they stay local to the component or leak outside.
+
+## Types of View Encapsulation
+### 1. Emulated (Default)
+```typescript
+import { Component, ViewEncapsulation } from '@angular/core';
+
+@Component({
+  selector: 'app-example',
+  template: `<h1>Hello</h1>`,
+  styles: [`h1 { color: red; }`],
+  encapsulation: ViewEncapsulation.Emulated
+})
+export class ExampleComponent {}
+```
+#### ✅ How it works
+- Angular adds unique attributes to elements
+- Styles are scoped using those attributes
+
+```HTML
+<h1 _ngcontent-abc> Hello </h1> 
+```
+```CSS
+h1[_ngcontent-abc] { color: red; }
+```
+#### ✅ Key Points
+- Styles are scoped to the component
+- Prevents style conflicts
+- Works even in older browsers (no Shadow DOM needed)
+
+### 2. None
+```typescript
+encapsulation: ViewEncapsulation.None
+```
+#### ✅ How it works
+- No scoping at all
+- Styles behave like global CSS
+```CSS
+h1 { color: red; }
+```
+👉 This will affect ALL `<h1>` elements in the app.
+#### ✅ Use cases
+1. Global themes
+2. Utility styles
+
+#### ❌ Drawback
+1. High risk of style conflicts
+
+### 3. ShadowDom
+```typesscript
+encapsulation: ViewEncapsulation.ShadowDom
+```
+#### ✅ How it works
+- Uses the browser’s native Shadow DOM
+- Creates a real DOM boundary
+
+```HTML
+#shadow-root
+  <h1>Hello</h1>
+```
+
+#### ✅ Key Points
+1. True style isolation
+2. Styles cannot leak in or out
+
+#### ❌ Drawbacks
+1. Limited support in older browsers
+2. Global styles (like styles.css) won’t apply inside
+
+### Comparison table
+| Feature         | Emulated (Default) | None   | ShadowDom    |
+| --------------- | ------------------ | ------ | ------------ |
+| Style Scope     | Component only     | Global | Strict local |
+| Uses Shadow DOM | ❌                  | ❌      | ✅            |
+| Style Leakage   | ❌                  | ✅      | ❌            |
+| Browser Support | ✅ High             | ✅ High | ⚠️ Medium    |
+
+# Promise vs Obervables
+## ✅ Promise
+- Represents one future value
+- Resolves once (success or failure)
+- Runs instantly even if you don’t use it
+- always asynchronous
+
+```typescript
+const promise = new Promise((resolve, reject) => {
+  resolve("Data received");
+});
+```
+
+```typescript
+const promise = new Promise((resolve, reject) => {
+       console.log('Text inside promise');
+       resolve('Hello world!');
+     });
+console.log('Before calling then method on Promise');
+greetingPoster.then(message => console.log(message));   
+
+//eager execution
+/**
+Text inside promise
+Before calling then method on Promise
+Hello world!
+**/
+```
+## ✅ Observable (from RxJS)
+- Represents a stream of values
+- Can emit multiple values over time
+- Runs only when subscribed
+- can be synchronous and asynchronous 
+```typescript
+import { Observable } from 'rxjs';
+
+const observable = new Observable(observer => {
+  observer.next("Data 1");
+  observer.next("Data 2");
+  observer.complete();
+});
+```
+```typescript
+const observable = rxjs.Observable.create(observer => {
+       console.log('Text inside an observable');
+       observer.next('Hello world!');
+       observer.complete();
+     });
+console.log('Before subscribing an Observable');
+observable.subscribe((message)=> console.log(message));  
+
+//Lazy execution
+/**
+Before subscribing an Observable
+Text inside an observable
+Hello world! 
+**/
+```
+
+## Key Differences
+| Feature        | Promise                  | Observable                     |
+| -------------- | ------------------------ | ------------------------------ |
+| Values         | Single value             | Multiple values (stream)       |
+| Execution      | Eager (runs immediately) | Lazy (runs on subscribe)       |
+| Cancellation   | ❌ Not possible           | ✅ Possible (unsubscribe)       |
+| Operators      | ❌ Limited                | ✅ Powerful (map, filter, etc.) |
+| Retry          | ❌ Not supported          | ✅ Supported                    |
+| Async Handling | `.then()`, `async/await` | `.subscribe()`                 |
+| Use Case       | One-time async task      | Continuous data streams        |
+
+# difference between Pure pipes and impure pipes
+## Pure Pipes :
+A pure pipe runs only when Angular detects a pure change:
+- Change in **primitive value** (string, number, boolean)
+- Change in **object reference** (not internal mutation)
+### Behavior
+- Angular does NOT re-run the pipe if:
+  - You mutate an object/array (e.g., push, splice)
+- Angular re-runs only if:
+  - The reference changes (e.g., new array assigned)
+
+```typescript
+@Pipe({
+  name: 'filterItems',
+  pure: true // default
+})
+export class FilterItemsPipe implements PipeTransform {
+  transform(items: string[]): string[] {
+    console.log('Pure pipe executed');
+    return items.filter(i => i.includes('a'));
+  }
+}
+
+this.items.push('apple'); // ❌ pipe NOT triggered
+this.items = [...this.items, 'apple']; // ✅ pipe triggered
+```
+### Key Points
+- Runs less frequently
+- High performance
+- Suitable for immutable data patterns
+
+## Impure Pipes
+An impure pipe runs on every change detection cycle, regardless of input changes. 
+
+### Behavior
+- Angular executes the pipe:
+  - On every event (click, input, timer, HTTP response, etc.)
+- Detects mutations inside objects/arrays
+
+```typescript
+@Pipe({
+  name: 'filterItems',
+  pure: false
+})
+export class FilterItemsPipe implements PipeTransform {
+  transform(items: string[]): string[] {
+    console.log('Impure pipe executed');
+    return items.filter(i => i.includes('a'));
+  }
+}
+
+this.items.push('apple'); // ✅ pipe triggered
+```
+### Key Points
+- Runs very frequently
+  - Can impact performance
+- Useful when working with:
+  - Mutable data
+  - Real-time updates
+
+***Note :***
+- Angular only uses one instance of pure pipe through the applications
+- But Angular creates multiple instances of impure pipe .
+
+### Side by Side Comparison
+| Feature           | Pure Pipe 🟢           | Impure Pipe 🔴                     |
+| ----------------- | ---------------------- | ---------------------------------- |
+| Default behavior  | Yes                    | No (must set `pure: false`)        |
+| Execution trigger | Input reference change | Every change detection cycle       |
+| Detects mutations | ❌ No                   | ✅ Yes                              |
+| Performance       | ✅ Fast                 | ❌ Slower                           |
+| Use case          | Immutable data         | Mutable / frequently changing data |
+
+
+#### Next : Explain MVVM architecture
