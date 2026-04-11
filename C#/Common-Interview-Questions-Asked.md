@@ -1,4 +1,14 @@
 # C# Interview questions Asked
+
+# Table of Contents
+1. [Can we use `return` statement inside catch block in C#](#q-can-we-use-return-statement-inside-catch-block-in-c)
+2. [why is string immutable in C# ](#q-why-is-string-immutable-in-c-)
+3. [How can I implement a method with same signature which is already implemented by a parent class using an interface ?](#q-how-can-i-implement-a-method-with-same-signature-which-is-already-implemented-by-a-parent-class-using-an-interface-)
+4. [How to run multiple threads in sequence ?](#q-how-to-run-multiple-threads-in-sequence-)
+5. [What are the different ways for injecting dependency in .NET and give examples of some services ]
+6. [An api is taking so much time to respond ? what might be the reasons and How to fix it ?]
+7. [Two services are hitting the databases for write operations ? How can you maintain consistency in writing to the database?]
+
 ## Q. Can we use `return` statement inside catch block in C#
 **Answer:**<br>
 - Yes, we absolutely can use a `return` statement inside a `catch`  block in C#.
@@ -165,5 +175,3 @@ Multiple approaches :
 1. async / await : modern approach
 2. Task.ContinueWith()
 3. Thread.Join() 
-
-## 

@@ -1,3 +1,9 @@
+# Table of Contents
+1. [Self Introduction](#1️⃣-self-introduction)
+2. [Why do you want to leave your Current Company](#2️⃣-why-do-you-want-to-leave-your-current-company-)
+3. [Why do you want to join our company?](#3️⃣-why-do-you-want-to-join-our-company)
+4. [What are your strengths ?]
+
 # Common Hr questions
 ## 1️⃣ Self Introduction
 My name is Kulabanta, and I have around 3 years of experience as a Software Engineer, primarily working as a full-stack developer.
